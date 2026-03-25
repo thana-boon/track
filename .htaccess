@@ -1,0 +1,15 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /tracks/
+
+# If the requested file/directory exists, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Otherwise route to index.php, preserving path as route
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ index.php?route=$1 [L,QSA]
+RewriteRule ^$ index.php [L]
+</IfModule>
