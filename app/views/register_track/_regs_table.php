@@ -22,11 +22,14 @@ if ($regsPage > $totalPages) {
     <div class="flex items-center gap-2 text-xs">
       <?php
         $base = $filterQuery;
+        $basePath = '/tracks/register_track';
+        $baseHref = $basePath . ($base !== '' ? ('?' . $base) : '');
+        $pageSep = (strpos($baseHref, '?') !== false) ? '&' : '?';
         $prevPage = max(1, $regsPage - 1);
         $nextPage = min($totalPages, $regsPage + 1);
-        $prevHref = '/tracks/?' . $base . ($prevPage > 1 ? '&page=' . $prevPage : '');
-        $nextHref = '/tracks/?' . $base . ($nextPage > 1 ? '&page=' . $nextPage : '');
-        $postAction = '/tracks/?' . $base . ($regsPage > 1 ? '&page=' . $regsPage : '');
+        $prevHref = $baseHref . ($prevPage > 1 ? ($pageSep . 'page=' . $prevPage) : '');
+        $nextHref = $baseHref . ($nextPage > 1 ? ($pageSep . 'page=' . $nextPage) : '');
+        $postAction = $baseHref . ($regsPage > 1 ? ($pageSep . 'page=' . $regsPage) : '');
       ?>
       <a class="regs-page-link rounded-2xl border border-black/10 bg-white px-3 py-2 hover:bg-black/5 <?= ($regsPage <= 1) ? 'pointer-events-none opacity-50' : '' ?>" data-page="<?= (int)$prevPage ?>" href="<?= e($prevHref) ?>">⬅ ก่อนหน้า</a>
       <a class="regs-page-link rounded-2xl border border-black/10 bg-white px-3 py-2 hover:bg-black/5 <?= ($regsPage >= $totalPages) ? 'pointer-events-none opacity-50' : '' ?>" data-page="<?= (int)$nextPage ?>" href="<?= e($nextHref) ?>">ถัดไป ➡</a>
@@ -48,7 +51,7 @@ if ($regsPage > $totalPages) {
           <tr class="hover:bg-sand-50">
             <td class="px-4 py-3">
               <div class="font-medium">
-                <a class="hover:underline" href="/tracks/?route=student_track&year_id=<?= (int)$r['year_id'] ?>&student_code=<?= e(rawurlencode((string)$r['student_code'])) ?>"><?= e((string)$r['first_name'] . ' ' . (string)$r['last_name']) ?></a>
+                <a class="hover:underline" href="/tracks/student_track?year_id=<?= (int)$r['year_id'] ?>&student_code=<?= e(rawurlencode((string)$r['student_code'])) ?>"><?= e((string)$r['first_name'] . ' ' . (string)$r['last_name']) ?></a>
               </div>
               <div class="mt-1 text-xs text-ink-800/60"><?= e((string)$r['student_code']) ?> • <?= e((string)$r['class_level']) ?>/<?= e((string)$r['class_room']) ?> เลขที่ <?= e((string)$r['number_in_room']) ?></div>
             </td>
@@ -57,7 +60,7 @@ if ($regsPage > $totalPages) {
             </td>
             <td class="px-4 py-3 text-xs text-ink-800/60"><?= e((string)$r['created_at']) ?></td>
             <td class="px-4 py-3">
-              <form method="post" action="<?= e((string)$postAction) ?>" onsubmit="return confirm('ยืนยันลบรายการนี้?');">
+              <form method="post" action="<?= e((string)$postAction) ?>" data-confirm="ยืนยันลบรายการนี้?">
                 <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
                 <input type="hidden" name="action" value="delete_one" />
                 <input type="hidden" name="id" value="<?= (int)$r['id'] ?>" />

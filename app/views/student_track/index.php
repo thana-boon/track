@@ -8,8 +8,8 @@ $studentRegs = $studentRegs ?? [];
 $yearId = (int)($yearId ?? 0);
 $selectedCode = (string)($filters['student_code'] ?? '');
 
+$basePath = '/tracks/student_track';
 $baseQuery = http_build_query(array_filter([
-  'route' => 'student_track',
   'year_id' => $yearId,
   'class_level' => (string)($filters['class_level'] ?? ''),
   'room' => (string)($filters['room'] ?? ''),
@@ -24,7 +24,7 @@ $baseQuery = http_build_query(array_filter([
         <h1 class="text-xl font-semibold tracking-tight">🧒 ดูข้อมูล Track รายคน</h1>
         <p class="mt-1 text-sm text-ink-800/70">เลือกเด็ก 1 คน แล้วดูว่า “ลงทะเบียนวิชาอะไรไปบ้าง”</p>
       </div>
-      <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/?route=register_track&year_id=<?= (int)$yearId ?><?= $selectedCode !== '' ? '&q=' . e(rawurlencode($selectedCode)) : '' ?>">🧾 ไปหน้าลงทะเบียน</a>
+      <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/register_track?year_id=<?= (int)$yearId ?><?= $selectedCode !== '' ? '&q=' . e(rawurlencode($selectedCode)) : '' ?>">🧾 ไปหน้าลงทะเบียน</a>
     </div>
 
     <?php if (!empty($success)): ?>
@@ -35,8 +35,7 @@ $baseQuery = http_build_query(array_filter([
       <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
     <?php endif; ?>
 
-    <form class="mt-4 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4 md:grid-cols-6" method="get" action="/tracks/">
-      <input type="hidden" name="route" value="student_track" />
+    <form class="mt-4 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4 md:grid-cols-6" method="get" action="<?= e((string)$basePath) ?>">
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ปีการศึกษา</label>
@@ -73,7 +72,7 @@ $baseQuery = http_build_query(array_filter([
 
       <div class="md:col-span-6 flex flex-wrap items-center gap-2">
         <button class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 ค้นหาเด็ก</button>
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/?route=student_track">🧹 ล้างตัวกรอง</a>
+        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/student_track">🧹 ล้างตัวกรอง</a>
       </div>
     </form>
 
@@ -90,7 +89,7 @@ $baseQuery = http_build_query(array_filter([
                 $code = (string)$s['student_code'];
                 $name = (string)$s['first_name'] . ' ' . (string)$s['last_name'];
                 $meta = (string)$s['class_level'] . '/' . (string)$s['class_room'] . ' เลขที่ ' . (string)$s['number_in_room'];
-                $href = '/tracks/?' . $baseQuery . '&student_code=' . rawurlencode($code);
+                $href = $basePath . ($baseQuery !== '' ? ('?' . $baseQuery . '&') : '?') . 'student_code=' . rawurlencode($code);
                 $active = ($selectedCode !== '' && $selectedCode === $code);
               ?>
               <li>
@@ -127,8 +126,8 @@ $baseQuery = http_build_query(array_filter([
                 <div class="mt-1 text-xs text-ink-800/60"><?= e((string)$student['student_code']) ?> • <?= e((string)$student['class_level']) ?>/<?= e((string)$student['class_room']) ?> เลขที่ <?= e((string)$student['number_in_room']) ?></div>
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/?route=register_track&year_id=<?= (int)$yearId ?>&q=<?= e(rawurlencode((string)$student['student_code'])) ?>">🧾 ไปแก้ไข/ลงทะเบียนเพิ่ม</a>
-                <a class="rounded-2xl bg-ink-900 px-3 py-2 text-xs font-medium text-white hover:opacity-95" href="/tracks/?route=report_statement&year_id=<?= (int)$yearId ?>&student_code=<?= e(rawurlencode((string)$student['student_code'])) ?>#preview">🖨️ ใบ Statement</a>
+                <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/register_track?year_id=<?= (int)$yearId ?>&q=<?= e(rawurlencode((string)$student['student_code'])) ?>">🧾 ไปแก้ไข/ลงทะเบียนเพิ่ม</a>
+                <a class="rounded-2xl bg-ink-900 px-3 py-2 text-xs font-medium text-white hover:opacity-95" href="/tracks/report_statement?year_id=<?= (int)$yearId ?>&student_code=<?= e(rawurlencode((string)$student['student_code'])) ?>#preview">🖨️ ใบ Statement</a>
               </div>
             </div>
           </div>
@@ -153,7 +152,7 @@ $baseQuery = http_build_query(array_filter([
                     </td>
                     <td class="px-4 py-3 text-xs text-ink-800/60"><?= e((string)$r['created_at']) ?></td>
                     <td class="px-4 py-3">
-                      <form method="post" action="/tracks/?<?= e((string)$baseQuery) ?>&student_code=<?= e(rawurlencode((string)$student['student_code'])) ?>" onsubmit="return confirm('ยืนยันลบรายการนี้?');">
+                      <form method="post" action="<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&student_code=<?= e(rawurlencode((string)$student['student_code'])) ?>" data-confirm="ยืนยันลบรายการนี้?">
                         <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
                         <input type="hidden" name="action" value="delete_one" />
                         <input type="hidden" name="id" value="<?= (int)$r['id'] ?>" />

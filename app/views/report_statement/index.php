@@ -8,16 +8,16 @@ $student = $student ?? null;
 $yearId = (int)($yearId ?? 0);
 $selectedCode = (string)($filters['student_code'] ?? '');
 
-$baseQuery = http_build_query(array_filter([
-  'route' => 'report_statement',
+$query = http_build_query(array_filter([
   'year_id' => $yearId,
   'class_level' => (string)($filters['class_level'] ?? ''),
   'room' => (string)($filters['room'] ?? ''),
   'q' => (string)($filters['q'] ?? ''),
 ], static fn($v) => $v !== '' && $v !== 0));
 
-$previewHref = $selectedCode !== '' ? ('/tracks/?' . $baseQuery . '&student_code=' . rawurlencode($selectedCode) . '#preview') : '';
-$printHref = $selectedCode !== '' ? ('/tracks/?' . $baseQuery . '&student_code=' . rawurlencode($selectedCode) . '&print=1') : '';
+$baseHref = '/tracks/report_statement' . ($query !== '' ? ('?' . $query) : '');
+$previewHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . 'student_code=' . rawurlencode($selectedCode) . '#preview') : '';
+$printHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . 'student_code=' . rawurlencode($selectedCode) . '&print=1') : '';
 ?>
 
 <div class="grid gap-6">
@@ -130,9 +130,8 @@ $printHref = $selectedCode !== '' ? ('/tracks/?' . $baseQuery . '&student_code='
         </form>
       </div>
 
-      <form class="rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4" method="get" action="/tracks/">
+      <form class="rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4" method="get" action="/tracks/report_statement">
         <div class="text-sm font-semibold">🔎 เลือกนักเรียน</div>
-        <input type="hidden" name="route" value="report_statement" />
 
         <div class="mt-3 grid gap-3 md:grid-cols-6">
           <div class="md:col-span-2">
@@ -170,7 +169,7 @@ $printHref = $selectedCode !== '' ? ('/tracks/?' . $baseQuery . '&student_code='
 
           <div class="md:col-span-6 flex flex-wrap items-center gap-2">
             <button class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 ค้นหา/โหลดรายชื่อ</button>
-            <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/?route=report_statement">🧹 ล้างตัวกรอง</a>
+            <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/report_statement">🧹 ล้างตัวกรอง</a>
           </div>
         </div>
 
@@ -186,7 +185,7 @@ $printHref = $selectedCode !== '' ? ('/tracks/?' . $baseQuery . '&student_code='
                   $code = (string)$s['student_code'];
                   $name = (string)$s['first_name'] . ' ' . (string)$s['last_name'];
                   $meta = (string)$s['class_level'] . '/' . (string)$s['class_room'] . ' เลขที่ ' . (string)$s['number_in_room'];
-                  $href = '/tracks/?' . $baseQuery . '&student_code=' . rawurlencode($code);
+                  $href = $baseHref . ($query !== '' ? '&' : '?') . 'student_code=' . rawurlencode($code);
                   $active = ($selectedCode !== '' && $selectedCode === $code);
                 ?>
                 <li>
@@ -231,14 +230,14 @@ $printHref = $selectedCode !== '' ? ('/tracks/?' . $baseQuery . '&student_code='
         </div>
       </div>
 
-      <form id="rsBulkForm" class="mt-3 flex flex-wrap items-center gap-2" method="post" target="_blank" action="/tracks/?<?= e($baseQuery) ?>">
+      <form id="rsBulkForm" class="mt-3 flex flex-wrap items-center gap-2" method="post" target="_blank" action="<?= e($baseHref) ?>">
         <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
         <input type="hidden" name="action" value="print_bulk" />
 
         <input type="hidden" name="print_scope" value="selected" />
         <button class="rounded-2xl bg-ink-900 px-4 py-2.5 text-sm font-medium text-white hover:opacity-95">🖨️ พิมพ์เฉพาะที่เลือก</button>
 
-        <button name="print_scope" value="all_filtered" class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" onclick="return confirm('พิมพ์ทั้งหมดตามตัวกรอง (ทั้งชั้น/ห้อง) ใช่ไหม?');">พิมพ์ทั้งหมดตามตัวกรอง</button>
+        <button name="print_scope" value="all_filtered" class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" data-confirm="พิมพ์ทั้งหมดตามตัวกรอง (ทั้งชั้น/ห้อง) ใช่ไหม?">พิมพ์ทั้งหมดตามตัวกรอง</button>
 
         <span class="text-xs text-ink-800/60">(จะเปิดหน้าใหม่ แล้วกด Print ได้)</span>
 

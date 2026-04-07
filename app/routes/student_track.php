@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = input_string('action');
 
-    $back = '/tracks/?route=student_track&year_id=' . $yearId;
+    $back = '/tracks/student_track?year_id=' . $yearId;
     if ($level !== '') $back .= '&class_level=' . rawurlencode($level);
     if ($room !== '') $back .= '&room=' . rawurlencode($room);
     if ($q !== '') $back .= '&q=' . rawurlencode($q);

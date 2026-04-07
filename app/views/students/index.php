@@ -9,11 +9,10 @@ $filters = $filters ?? [];
         <h1 class="text-xl font-semibold tracking-tight">📋 รายชื่อ (ม.4 - ม.6)</h1>
         <p class="mt-1 text-sm text-ink-800/70">เลือกปีการศึกษาและกรองข้อมูลได้แบบนุ่มๆ</p>
       </div>
-      <a class="rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm hover:bg-black/5" href="/tracks/?route=students">🧹 ล้างตัวกรอง</a>
+      <a class="rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm hover:bg-black/5" href="/tracks/students">🧹 ล้างตัวกรอง</a>
     </div>
 
-    <form class="mt-6 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/25 p-4 md:grid-cols-6" method="get" action="/tracks/">
-      <input type="hidden" name="route" value="students" />
+    <form class="mt-6 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/25 p-4 md:grid-cols-6" method="get" action="/tracks/students">
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ปีการศึกษา</label>

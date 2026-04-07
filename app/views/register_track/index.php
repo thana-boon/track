@@ -7,8 +7,8 @@ $regs = $regs ?? [];
 
 $activeSubjects = array_values(array_filter($subjects, static fn($s) => (int)($s['is_active'] ?? 0) === 1));
 
+$basePath = '/tracks/register_track';
 $filterBaseQuery = http_build_query(array_filter([
-  'route' => 'register_track',
   'year_id' => (int)($yearId ?? 0),
   'class_level' => (string)($filters['class_level'] ?? ''),
   'room' => (string)($filters['room'] ?? ''),
@@ -17,6 +17,8 @@ $filterBaseQuery = http_build_query(array_filter([
 
 // The regs table partial expects $filterQuery to be the base query (without page).
 $filterQuery = $filterBaseQuery;
+
+$filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : '');
 ?>
 
 <div class="grid gap-6">
@@ -40,8 +42,7 @@ $filterQuery = $filterBaseQuery;
       <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
     <?php endif; ?>
 
-    <form class="mt-4 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-lilac/20 p-4 md:grid-cols-6" method="get" action="/tracks/">
-      <input type="hidden" name="route" value="register_track" />
+    <form class="mt-4 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-lilac/20 p-4 md:grid-cols-6" method="get" action="<?= e((string)$basePath) ?>">
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ปีการศึกษา</label>
@@ -78,12 +79,12 @@ $filterQuery = $filterBaseQuery;
 
       <div class="md:col-span-6 flex flex-wrap items-center gap-2">
         <button class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 โหลดรายชื่อ</button>
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/?route=register_track">🧹 ล้างตัวกรอง</a>
+        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/register_track">🧹 ล้างตัวกรอง</a>
       </div>
     </form>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2 lg:items-stretch">
-      <form id="bulkForm" class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-mint/25 p-5" method="post" action="/tracks/?<?= e((string)$filterBaseQuery) ?>">
+      <form id="bulkForm" class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-mint/25 p-5" method="post" action="<?= e((string)$filterHref) ?>">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
 
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -153,7 +154,7 @@ $filterQuery = $filterBaseQuery;
             <h2 class="text-sm font-semibold">🧩 วิชา (ลากได้)</h2>
             <p class="mt-1 text-xs text-ink-800/60">ลากการ์ดวิชาไปวางที่ชื่อนักเรียนเพื่อเพิ่มรายบุคคลแบบเร็วๆ</p>
           </div>
-          <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/?route=track-subjects">จัดการวิชา</a>
+          <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/track-subjects">จัดการวิชา</a>
         </div>
 
         <div class="mt-4 grid gap-3 sm:grid-cols-2">
@@ -217,7 +218,12 @@ $filterQuery = $filterBaseQuery;
       const container = document.getElementById('regsContainer');
       if (!container) return;
       const currentPage = parseInt(container.dataset.page || '1', 10) || 1;
-      const url = '/tracks/?<?= e((string)$filterBaseQuery) ?>' + (currentPage > 1 ? ('&page=' + currentPage) : '') + '&fragment=regs';
+      const base = '<?= e((string)$filterHref) ?>';
+      const u = new URL(base, window.location.origin);
+      if (currentPage > 1) u.searchParams.set('page', String(currentPage));
+      else u.searchParams.delete('page');
+      u.searchParams.set('fragment', 'regs');
+      const url = u.pathname + '?' + u.searchParams.toString();
       try {
         const res = await fetch(url, { method: 'GET' });
         const html = await res.text();
@@ -272,7 +278,10 @@ $filterQuery = $filterBaseQuery;
         fd.append('subject_id', subjectId);
 
         try {
-          const res = await fetch('/tracks/?<?= e((string)$filterBaseQuery) ?>', { method: 'POST', body: fd });
+          const base = '<?= e((string)$filterHref) ?>';
+          const u = new URL(base, window.location.origin);
+          const url = u.pathname + (u.search ? u.search : '');
+          const res = await fetch(url, { method: 'POST', body: fd });
           const json = await res.json();
           if (!json.ok) throw new Error(json.error || 'error');
           // Quick visual feedback
@@ -280,7 +289,15 @@ $filterQuery = $filterBaseQuery;
           setTimeout(() => row.classList.remove('bg-emerald-50'), 700);
           refreshRegs();
         } catch (err) {
-          alert('ไม่สามารถลงทะเบียนได้: ' + (err && err.message ? err.message : 'เกิดข้อผิดพลาด'));
+          var msg = 'ไม่สามารถลงทะเบียนได้: ' + (err && err.message ? err.message : 'เกิดข้อผิดพลาด');
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: 'เกิดข้อผิดพลาด',
+              text: msg,
+              icon: 'error',
+              confirmButtonText: 'ปิด'
+            });
+          }
         }
       });
     });

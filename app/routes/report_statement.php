@@ -58,7 +58,7 @@ $success = flash_get('success');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = input_string('action');
 
-    $back = '/tracks/?route=report_statement&year_id=' . $yearId;
+    $back = '/tracks/report_statement?year_id=' . $yearId;
     if ($level !== '') $back .= '&class_level=' . rawurlencode($level);
     if ($room !== '') $back .= '&room=' . rawurlencode($room);
     if ($q !== '') $back .= '&q=' . rawurlencode($q);

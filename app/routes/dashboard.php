@@ -15,6 +15,23 @@ $counts = [
     'students_m456' => 0,
 ];
 
+$recentLogs = [];
+
+// Recent activity (admin dashboard)
+try {
+    activity_logs_table_ensure();
+    $pdoApp = db_app();
+    $stmt = $pdoApp->query(
+        'SELECT id, created_at, username, role, method, route, event, message '
+        . 'FROM activity_logs '
+        . 'ORDER BY id DESC '
+        . 'LIMIT 10'
+    );
+    $recentLogs = $stmt->fetchAll() ?: [];
+} catch (Throwable $e) {
+    $recentLogs = [];
+}
+
 // Correct counts with proper fetchColumn
 if ($yearId > 0) {
     $allowed = [
@@ -32,4 +49,5 @@ echo render('dashboard', [
     'title' => 'Dashboard',
     'activeYear' => $activeYear,
     'counts' => $counts,
+    'recentLogs' => $recentLogs,
 ]);

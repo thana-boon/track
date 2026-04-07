@@ -132,25 +132,27 @@ function school_students_for_track(int $yearId, string $level, string $room, str
 
     $levels = class_levels_for_filter($level);
 
-    $where = ['year_id = :y'];
-    $params = [':y' => $yearId];
+    // Use positional placeholders to avoid PDO native prepare issues with repeated named params.
+    $where = ['year_id = ?'];
+    $params = [$yearId];
 
-    $lvlPlaceholders = [];
-    foreach ($levels as $i => $lvl) {
-        $ph = ':lvl' . $i;
-        $lvlPlaceholders[] = $ph;
-        $params[$ph] = $lvl;
+    $lvlPlaceholders = implode(',', array_fill(0, count($levels), '?'));
+    $where[] = 'class_level IN (' . $lvlPlaceholders . ')';
+    foreach ($levels as $lvl) {
+        $params[] = $lvl;
     }
-    $where[] = 'class_level IN (' . implode(',', $lvlPlaceholders) . ')';
 
     if ($room !== '' && ctype_digit($room)) {
-        $where[] = 'class_room = :room';
-        $params[':room'] = (int)$room;
+        $where[] = 'class_room = ?';
+        $params[] = (int)$room;
     }
 
     if ($q !== '') {
-        $where[] = '(student_code LIKE :q OR first_name LIKE :q OR last_name LIKE :q)';
-        $params[':q'] = '%' . $q . '%';
+        $where[] = '(student_code LIKE ? OR first_name LIKE ? OR last_name LIKE ?)';
+        $like = '%' . $q . '%';
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
     }
 
     $sql = 'SELECT year_id, student_code, first_name, last_name, class_level, class_room, number_in_room '

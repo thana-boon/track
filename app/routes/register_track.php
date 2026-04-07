@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = input_string('action');
 
-    $back = '/tracks/?route=register_track&year_id=' . $yearId;
+    $back = '/tracks/register_track?year_id=' . $yearId;
     if ($level !== '') {
         $back .= '&class_level=' . rawurlencode($level);
     }
@@ -132,7 +132,6 @@ if ($yearId > 0) {
 // HTML fragment for AJAX refresh (no layout)
 if (query_string('fragment') === 'regs') {
     $filterQuery = http_build_query(array_filter([
-        'route' => 'register_track',
         'year_id' => $yearId,
         'class_level' => $level !== '' ? $level : null,
         'room' => $room !== '' ? $room : null,

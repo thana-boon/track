@@ -12,7 +12,7 @@ $editing = is_array($editing ?? null) ? $editing : null;
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm hover:bg-black/5" href="/tracks/?route=track-subjects&export=1&_csrf=<?= e($csrf) ?>">⬇️ Export CSV</a>
+        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm hover:bg-black/5" href="/tracks/track-subjects?export=1&_csrf=<?= e($csrf) ?>">⬇️ Export CSV</a>
       </div>
     </div>
 
@@ -59,7 +59,7 @@ $editing = is_array($editing ?? null) ? $editing : null;
 
             <div class="flex items-center gap-2">
               <?php if ($editing): ?>
-                <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/?route=track-subjects">ยกเลิก</a>
+                <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/track-subjects">ยกเลิก</a>
               <?php endif; ?>
               <button class="rounded-2xl bg-calm-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-calm-500">
                 <?= $editing ? '💾 บันทึก' : '✅ เพิ่มวิชา' ?>
@@ -131,8 +131,8 @@ $editing = is_array($editing ?? null) ? $editing : null;
               </td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap gap-2">
-                  <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/?route=track-subjects&edit=<?= (int)$s['id'] ?>">✏️ แก้ไข</a>
-                  <form method="post" onsubmit="return confirm('ยืนยันลบวิชานี้?');">
+                  <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/track-subjects?edit=<?= (int)$s['id'] ?>">✏️ แก้ไข</a>
+                  <form method="post" data-confirm="ยืนยันลบวิชานี้?">
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                     <input type="hidden" name="action" value="delete" />
                     <input type="hidden" name="id" value="<?= (int)$s['id'] ?>" />
