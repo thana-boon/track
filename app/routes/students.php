@@ -20,6 +20,8 @@ if ($defaultYearId === 0 && isset($years[0]['id'])) {
 
 $yearId = (int)(query_string('year_id') !== '' ? query_string('year_id') : (string)$defaultYearId);
 
+$term = term_from_request(track_active_term());
+
 // Validate yearId exists in list
 $yearIdValid = false;
 foreach ($years as $y) {
@@ -98,6 +100,7 @@ echo render('students/index', [
     'title' => 'รายชื่อ (ม4-ม6)',
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'students' => $students,
     'filters' => [
         'q' => $q,

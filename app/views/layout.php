@@ -181,7 +181,6 @@ $user = auth_user();
                 <button type="button" class="rounded-xl border border-black/5 bg-sand-100/70 px-3 py-2 hover:bg-black/5 focus:outline-none">📋 ข้อมูล</button>
                 <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/students">📋 รายชื่อ</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/student_track">🧒 ดูรายคน</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/academic_year">📅 ปีการศึกษา</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_advisors">👩‍🏫 ครูประจำชั้น</a>
                 </div>
@@ -190,8 +189,10 @@ $user = auth_user();
               <div class="relative shrink-0 group">
                 <button type="button" class="rounded-xl border border-black/5 bg-pastel-mint/45 px-3 py-2 hover:bg-black/5 focus:outline-none">🧩 วิชา/ลงทะเบียน</button>
                 <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/track-groups">🧩 กลุ่ม Track</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/track-subjects">🧩 วิชา</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/register_track">🧾 ลงทะเบียน</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/student_manage">🧒 จัดการรายคน</a>
                 </div>
               </div>
 
@@ -207,7 +208,7 @@ $user = auth_user();
               <div class="relative shrink-0 group">
                 <button type="button" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">🖨️ รายงาน</button>
                 <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/report_statement">🖨️ ใบ Statement</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/report_statement">🖨️ ใบ Transcript</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/activity_logs">📜 Activity log</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/backup_restore">💾 Backup/Restore</a>
                 </div>

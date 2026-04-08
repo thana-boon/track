@@ -10,10 +10,13 @@ $note = is_array($session) ? trim((string)($session['note'] ?? '')) : '';
 
 $returnDate = (string)($returnDate ?? '');
 $returnYear = (int)($returnYear ?? 0);
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 $backYear = $returnYear > 0 ? $returnYear : (is_array($session) ? (int)($session['year_id'] ?? 0) : 0);
 $backDate = $returnDate !== '' ? $returnDate : $date;
 $backQs = http_build_query(array_filter([
   'year_id' => $backYear,
+  'term' => $term,
   'session_date' => $backDate,
 ], static fn($v) => $v !== '' && $v !== 0));
 $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '');

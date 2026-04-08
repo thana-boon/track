@@ -6,7 +6,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title><?= e((string)($title ?? 'ใบ Statement')) ?></title>
+  <title><?= e((string)($title ?? 'ใบ Transcript')) ?></title>
   <link rel="icon" href="/tracks/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,48 +62,50 @@
 
     .statement {
       box-sizing: border-box;
-      padding: 12mm;
-      font-size: 18pt;
-      line-height: 1.25;
+      padding: 8mm;
+      font-size: 16pt;
+      line-height: 1.18;
     }
 
-    .header { display: grid; grid-template-columns: 26mm 1fr 58mm; gap: 10mm; align-items: center; }
-    .logo img { width: 26mm; height: 26mm; object-fit: contain; }
-    .logo-placeholder { width: 26mm; height: 26mm; display: grid; place-items: center; border: 1px dashed #999; font-size: 12pt; color: #666; }
+    .header { display: grid; grid-template-columns: 52mm 1fr 52mm; gap: 7mm; align-items: center; }
+    .logo img { width: 22mm; height: 22mm; object-fit: contain; }
+    .logo-placeholder { width: 22mm; height: 22mm; display: grid; place-items: center; border: 1px dashed #999; font-size: 11pt; color: #666; }
 
-    .school-name { font-size: 24pt; font-weight: 700; text-align: center; }
-    .school-sub { font-size: 16pt; text-align: center; color: #444; margin-top: 1mm; }
+    .school-name { font-size: 21pt; font-weight: 700; text-align: center; }
+    .school-sub { font-size: 14pt; text-align: center; color: #444; margin-top: 0.8mm; }
 
-    .meta { font-size: 14pt; color: #222; text-align: right; }
+    .meta { font-size: 12pt; color: #222; text-align: right; }
 
-    .title { margin-top: 6mm; text-align: center; font-size: 22pt; font-weight: 700; }
+    .title { margin-top: 4mm; text-align: center; font-size: 19pt; font-weight: 700; }
 
-    .info { margin-top: 6mm; border: 1px solid #222; padding: 4mm; }
-    .info .row { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+    .info { margin-top: 4mm; border: 1px solid #222; padding: 3mm; }
+    .info .row { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
     .k { font-weight: 700; }
 
-    .section { margin-top: 6mm; }
-    .section-title { font-size: 18pt; font-weight: 700; margin-bottom: 2mm; }
+    .section { margin-top: 4mm; }
+    .section-title { font-size: 16pt; font-weight: 700; margin-bottom: 1.5mm; }
 
-    .tbl { width: 100%; border-collapse: collapse; font-size: 14pt; }
-    .tbl th, .tbl td { border: 1px solid #222; padding: 2.2mm 2.4mm; vertical-align: top; }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 12pt; }
+    .tbl th, .tbl td { border: 1px solid #222; padding: 1.6mm 2mm; vertical-align: top; }
     .tbl th { background: #f5f5f5; font-weight: 700; }
     .tbl .no { width: 14mm; text-align: center; }
     .tbl .date { width: 30mm; text-align: center; }
+    .tbl .year-row td { background: #eaeaea; font-weight: 700; }
+    .tbl .group-row td { background: #f7f7f7; font-weight: 700; text-align: center; }
     .subj-title { font-weight: 700; }
-    .subj-desc { margin-top: 1mm; font-size: 12pt; color: #444; }
+    .subj-desc { margin-top: 0.8mm; font-size: 11pt; color: #444; }
 
-    .footer { margin-top: 10mm; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10mm; }
-    .sig { text-align: center; font-size: 14pt; }
-    .sig .signbox { position: relative; height: 22mm; }
+    .footer { margin-top: 6mm; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+    .sig { text-align: center; font-size: 12pt; }
+    .sig .signbox { position: relative; height: 18mm; }
     .sig .line { position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-top: 1px solid #222; }
-    .sig .name { margin-top: 1.5mm; }
-    .sig .pos { margin-top: 0.5mm; }
+    .sig .name { margin-top: 1mm; }
+    .sig .pos { margin-top: 0.4mm; }
 
-    .note { margin-top: 6mm; font-size: 12pt; color: #333; }
+    .note { margin-top: 4mm; font-size: 11pt; color: #333; }
     .empty { padding: 14mm; text-align: center; font-size: 16pt; color: #333; border: 1px dashed #999; margin-top: 10mm; }
 
-    .sign { position: absolute; left: 50%; transform: translateX(-50%); bottom: 2mm; height: 18mm; width: auto; object-fit: contain; }
+    .sign { position: absolute; left: 50%; transform: translateX(-50%); bottom: 1.8mm; height: 14mm; width: auto; object-fit: contain; }
     .page-break { page-break-after: always; break-after: page; }
 
     @page { size: A4; margin: 0; }
@@ -127,7 +129,8 @@
       if (is_array($printStudents) && count($printStudents) > 0) {
         foreach ($printStudents as $idx => $item) {
           $student = $item['student'] ?? null;
-          $studentRegs = $item['regs'] ?? [];
+          $transcriptRows = $item['transcriptRows'] ?? [];
+          $advisorName = $item['advisorName'] ?? null;
           require __DIR__ . '/_statement.php';
           if ($idx < count($printStudents) - 1) {
             echo '<div class="page-break"></div>';

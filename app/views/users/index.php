@@ -83,22 +83,13 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
         <input type="hidden" name="action" value="import_csv" />
 
         <h2 class="text-sm font-semibold">📥 นำเข้าผู้ใช้ (CSV)</h2>
-        <p class="mt-1 text-xs text-ink-800/60">รูปแบบคอลัมน์: <span class="font-mono">username,displayname,password,role</span> (มี header <span class="font-mono">username</span> ได้)</p>
+        <p class="mt-1 text-xs text-ink-800/60">รูปแบบคอลัมน์: <span class="font-mono">username,displayname,password,role</span> (ต้องมี role ทุกแถว • มี header <span class="font-mono">username</span> ได้)</p>
 
         <div class="mt-3 space-y-3">
           <div>
             <label class="text-xs font-medium">ไฟล์ CSV</label>
             <input type="file" name="import_file" accept=".csv,text/csv" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" />
             <div class="mt-1 text-[11px] text-ink-800/60">ตัวอย่างบรรทัด: <span class="font-mono">teacher01,ครูสมชาย,Pass1234,teacher</span></div>
-          </div>
-
-          <div>
-            <label class="text-xs font-medium">Default role (ถ้าไม่ระบุ)</label>
-            <select name="default_role" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500">
-              <option value="admin">admin</option>
-              <option value="teacher" selected>teacher</option>
-              <option value="student">student</option>
-            </select>
           </div>
 
           <button class="inline-flex w-full items-center justify-center rounded-2xl bg-ink-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-ink-800">⬆️ Import</button>
@@ -151,29 +142,27 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
         <tbody class="divide-y divide-black/5">
           <?php foreach (($users ?? []) as $u): ?>
             <tr class="hover:bg-sand-50">
+              <?php $formId = 'userUpdate' . (int)$u['id']; ?>
               <td class="px-4 py-3 font-medium whitespace-nowrap"><?= e((string)$u['username']) ?></td>
               <td class="px-4 py-3">
-                <form method="post" class="flex items-center gap-2">
-                  <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
-                  <input type="hidden" name="action" value="update_display" />
-                  <input type="hidden" name="id" value="<?= (int)$u['id'] ?>" />
-                  <input name="displayname" value="<?= e((string)$u['displayname']) ?>" class="w-full min-w-[240px] rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" />
-                  <button class="rounded-xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5">บันทึก</button>
-                </form>
+                <input form="<?= e($formId) ?>" name="displayname" value="<?= e((string)$u['displayname']) ?>" class="w-full min-w-[240px] rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" />
               </td>
               <td class="px-4 py-3">
                 <?php $role = (string)($u['role'] ?? 'teacher'); ?>
-                <form method="post" class="flex items-center gap-2">
+                <form id="<?= e($formId) ?>" method="post" class="hidden">
                   <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
-                  <input type="hidden" name="action" value="update_role" />
+                  <input type="hidden" name="action" value="update_user" />
                   <input type="hidden" name="id" value="<?= (int)$u['id'] ?>" />
-                  <select name="role" class="min-w-[110px] rounded-xl border border-black/10 bg-white px-3 py-2 text-xs outline-none focus:border-calm-500">
+                </form>
+
+                <div class="flex items-center gap-2">
+                  <select form="<?= e($formId) ?>" name="role" class="min-w-[110px] rounded-xl border border-black/10 bg-white px-3 py-2 text-xs outline-none focus:border-calm-500">
                     <option value="admin" <?= $role === 'admin' ? 'selected' : '' ?>>admin</option>
                     <option value="teacher" <?= $role === 'teacher' ? 'selected' : '' ?>>teacher</option>
                     <option value="student" <?= $role === 'student' ? 'selected' : '' ?>>student</option>
                   </select>
-                  <button class="rounded-xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5">บันทึก</button>
-                </form>
+                  <button form="<?= e($formId) ?>" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5">บันทึก</button>
+                </div>
               </td>
               <td class="px-4 py-3 text-xs text-ink-800/70 whitespace-nowrap"><?= e((string)$u['created_at']) ?></td>
               <td class="px-4 py-3">

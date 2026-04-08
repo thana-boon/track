@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_auth();
 track_subjects_table_ensure();
+track_groups_table_ensure();
 
 $error = null;
 $success = flash_get('success');
@@ -51,22 +52,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'create') {
+            $groupId = (int)input_string('group_id');
+            $subjectCode = input_string('subject_code');
             $title = input_string('title');
             $description = input_string('description');
             $isActive = input_string('is_active') === '1';
 
-            track_subject_create($title, $description, $isActive);
+            track_subject_create($groupId, $subjectCode, $title, $description, $isActive);
             flash_set('success', 'เพิ่มวิชา Track แล้ว');
             redirect('track-subjects');
         }
 
         if ($action === 'update') {
             $id = (int)input_string('id');
+            $groupId = (int)input_string('group_id');
+            $subjectCode = input_string('subject_code');
             $title = input_string('title');
             $description = input_string('description');
             $isActive = input_string('is_active') === '1';
 
-            track_subject_update($id, $title, $description, $isActive);
+            track_subject_update($id, $groupId, $subjectCode, $title, $description, $isActive);
             flash_set('success', 'แก้ไขวิชาแล้ว');
             redirect('track-subjects');
         }
@@ -84,6 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (str_contains($e->getMessage(), 'uq_track_subjects_title')) {
             $msg = 'ชื่อวิชาซ้ำ กรุณาเปลี่ยนชื่อ';
         }
+        if (str_contains($e->getMessage(), 'uq_track_subjects_code')) {
+            $msg = 'รหัสวิชาซ้ำ กรุณาเปลี่ยนรหัส';
+        }
         $error = $msg;
     } catch (Throwable $e) {
         $error = $e instanceof RuntimeException ? $e->getMessage() : 'เกิดข้อผิดพลาด';
@@ -91,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $subjects = track_subjects_all();
+$groups = track_groups_all();
 
 $editId = (int)query_string('edit');
 $editing = null;
@@ -106,6 +115,7 @@ if ($editId > 0) {
 echo render('track_subjects/index', [
     'title' => 'วิชา Track',
     'subjects' => $subjects,
+    'groups' => $groups,
     'editing' => $editing,
     'error' => $error,
     'success' => $success,

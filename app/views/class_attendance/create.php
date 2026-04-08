@@ -4,11 +4,14 @@ $filters = $filters ?? [];
 $students = $students ?? [];
 
 $yearId = (int)($yearId ?? 0);
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 $subjectId = (int)($subjectId ?? 0);
 
 $basePath = '/tracks/class_attendance_create';
 $baseQuery = http_build_query(array_filter([
   'year_id' => $yearId,
+  'term' => $term,
   'subject_id' => $subjectId,
   'class_level' => (string)($filters['class_level'] ?? ''),
   'room' => (string)($filters['room'] ?? ''),
@@ -25,7 +28,7 @@ $baseQuery = http_build_query(array_filter([
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/class_attendance?year_id=<?= (int)$yearId ?>">← ตารางเรียนตามวัน</a>
+        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/class_attendance?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>">← ตารางเรียนตามวัน</a>
       </div>
     </div>
 
@@ -45,10 +48,10 @@ $baseQuery = http_build_query(array_filter([
       <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
       <input type="hidden" name="action" value="create_session" />
 
-      <div class="grid gap-3 md:grid-cols-2">
+      <div class="grid gap-3 md:grid-cols-3">
         <div>
           <label class="text-xs font-medium">ปีการศึกษา</label>
-          <select name="year_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(this.value)+'&subject_id='+encodeURIComponent(this.form.subject_id.value)">
+          <select id="attCreateYear" name="year_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attCreateYear'); var t=document.getElementById('attCreateTerm'); if(!y||!t) return; location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value)+'&subject_id='+encodeURIComponent(y.form.subject_id.value);})()">
             <?php foreach (($years ?? []) as $y): ?>
               <?php
                 $id = (int)($y['id'] ?? 0);
@@ -61,8 +64,16 @@ $baseQuery = http_build_query(array_filter([
         </div>
 
         <div>
+          <label class="text-xs font-medium">เทอม</label>
+          <select id="attCreateTerm" name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attCreateYear'); var t=document.getElementById('attCreateTerm'); if(!y||!t) return; location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value)+'&subject_id='+encodeURIComponent(y.form.subject_id.value);})()">
+            <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+            <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
+          </select>
+        </div>
+
+        <div>
           <label class="text-xs font-medium">วิชา</label>
-          <select name="subject_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&subject_id='+encodeURIComponent(this.value)">
+          <select name="subject_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&subject_id='+encodeURIComponent(this.value)">
             <?php foreach (($subjects ?? []) as $s): ?>
               <?php
                 $id = (int)($s['id'] ?? 0);

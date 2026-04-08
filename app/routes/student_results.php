@@ -30,6 +30,7 @@ if ($defaultYearId === 0 && isset($years[0]['id'])) {
 }
 
 $yearId = (int)(query_string('year_id') !== '' ? query_string('year_id') : (string)$defaultYearId);
+$term = term_from_request(track_active_term());
 $yearValid = false;
 foreach ($years as $y) {
     if ((int)$y['id'] === $yearId) {
@@ -62,7 +63,7 @@ if ($yearId > 0 && $studentCode !== '') {
 $assignedRegs = [];
 if ($yearId > 0 && $studentCode !== '') {
     // In this project, registrations are used as the “assigned/recorded subjects” list for a student.
-    $assignedRegs = track_registrations_for_student($yearId, $studentCode);
+    $assignedRegs = track_registrations_for_student_term($yearId, $term, $studentCode);
 }
 
 // Aggregate attendance/result per subject for this student in this year.
@@ -85,10 +86,10 @@ if ($yearId > 0 && $studentCode !== '') {
         . 'MAX(cs.checked_at) AS last_checked_at '
         . 'FROM track_class_students cs '
         . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
-        . 'WHERE sess.year_id = ? AND cs.student_code = ? '
+        . 'WHERE sess.year_id = ? AND sess.term = ? AND cs.student_code = ? '
         . 'GROUP BY sess.subject_id'
     );
-    $stmt->execute([$yearId, $studentCode]);
+    $stmt->execute([$yearId, $term, $studentCode]);
 
     foreach ($stmt->fetchAll() as $row) {
         $sid = (int)($row['subject_id'] ?? 0);
@@ -101,10 +102,10 @@ if ($yearId > 0 && $studentCode !== '') {
         'SELECT sess.subject_id, cs.attend_status, cs.result_status, cs.checked_at '
         . 'FROM track_class_students cs '
         . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
-        . 'WHERE sess.year_id = ? AND cs.student_code = ? AND cs.checked_at IS NOT NULL '
+        . 'WHERE sess.year_id = ? AND sess.term = ? AND cs.student_code = ? AND cs.checked_at IS NOT NULL '
         . 'ORDER BY sess.subject_id ASC, cs.checked_at DESC, cs.session_id DESC'
     );
-    $stmt2->execute([$yearId, $studentCode]);
+    $stmt2->execute([$yearId, $term, $studentCode]);
 
     foreach ($stmt2->fetchAll() as $row) {
         $sid = (int)($row['subject_id'] ?? 0);
@@ -206,6 +207,7 @@ echo render('student_results/index', [
     'title' => 'ผลการเรียนของฉัน',
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'yearText' => $yearText !== '' ? $yearText : (string)$yearId,
     'studentCode' => $studentCode,
     'student' => $student,

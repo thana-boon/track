@@ -31,6 +31,8 @@ if (!$yearValid) {
     $yearId = $defaultYearId;
 }
 
+$term = term_from_request(track_active_term());
+
 $level = query_string('class_level'); // '', 'ม.4','ม.5','ม.6'
 $room = query_string('room');
 $q = query_string('q');
@@ -50,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && input_string('action') === 'assign_
     $studentCode = input_string('student_code');
 
     try {
-        $inserted = track_reg_assign_bulk($yearId, $subjectId, [$studentCode]);
+        $inserted = track_reg_assign_bulk_for_term($yearId, $term, $subjectId, [$studentCode], 'pass');
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok' => true, 'inserted' => $inserted], JSON_UNESCAPED_UNICODE);
     } catch (Throwable $e) {
@@ -65,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = input_string('action');
 
-    $back = '/tracks/register_track?year_id=' . $yearId;
+    $back = '/tracks/register_track?year_id=' . $yearId . '&term=' . $term;
     if ($level !== '') {
         $back .= '&class_level=' . rawurlencode($level);
     }
@@ -83,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!is_array($codes)) {
                 $codes = [];
             }
-            $inserted = track_reg_assign_bulk($yearId, $subjectId, array_map('strval', $codes));
+            $inserted = track_reg_assign_bulk_for_term($yearId, $term, $subjectId, array_map('strval', $codes), 'pass');
             flash_set('success', 'ลงทะเบียนแล้ว ✅ เพิ่ม ' . $inserted . ' รายการ');
             header('Location: ' . $back);
             exit;
@@ -95,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!is_array($codes)) {
                 $codes = [];
             }
-            $deleted = track_reg_unassign_bulk($yearId, $subjectId, array_map('strval', $codes));
+            $deleted = track_reg_unassign_bulk_for_term($yearId, $term, $subjectId, array_map('strval', $codes));
             flash_set('success', 'ลบออกแล้ว 🗑️ ' . $deleted . ' รายการ');
             header('Location: ' . $back);
             exit;
@@ -120,19 +122,20 @@ $regs = [];
 $regsTotal = 0;
 if ($yearId > 0) {
     $students = school_students_for_track($yearId, $level, $room, $q, 300);
-    $regsTotal = track_registrations_count($yearId, $level, $room, $q);
+    $regsTotal = track_registrations_count($yearId, $term, $level, $room, $q);
     $offset = ($page - 1) * $pageSize;
     if ($offset >= $regsTotal && $regsTotal > 0) {
         $page = (int)max(1, (int)ceil($regsTotal / $pageSize));
         $offset = ($page - 1) * $pageSize;
     }
-    $regs = track_registrations_list($yearId, $level, $room, $q, $pageSize, $offset);
+    $regs = track_registrations_list($yearId, $term, $level, $room, $q, $pageSize, $offset);
 }
 
 // HTML fragment for AJAX refresh (no layout)
 if (query_string('fragment') === 'regs') {
     $filterQuery = http_build_query(array_filter([
         'year_id' => $yearId,
+        'term' => $term,
         'class_level' => $level !== '' ? $level : null,
         'room' => $room !== '' ? $room : null,
         'q' => $q !== '' ? $q : null,
@@ -157,6 +160,7 @@ echo render('register_track/index', [
     'title' => 'ลงทะเบียน Track',
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'subjects' => $subjects,
     'students' => $students,
     'regs' => $regs,

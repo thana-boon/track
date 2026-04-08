@@ -18,6 +18,9 @@ if (!$session) {
     exit;
 }
 
+$term = (int)($session['term'] ?? term_from_request(track_active_term()));
+$term = ($term === 2) ? 2 : 1;
+
 $error = null;
 $success = flash_get('success');
 
@@ -38,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $qs = http_build_query(array_filter([
                 'id' => $sessionId,
+                'term' => $term,
                 'return_date' => $returnDate,
                 'return_year' => $returnYear,
             ], static fn($v) => $v !== '' && $v !== 0));
@@ -56,13 +60,14 @@ $roster = track_class_roster($sessionId);
 $csrf = csrf_token();
 
 // A small note for the UI.
-$passNote = 'หมายเหตุ: เมื่อตั้งผลเป็น “ผ่าน” ระบบจะเพิ่มวิชานี้เข้าในประวัติ (หน้า ดูรายคน/Statement) ให้โดยอัตโนมัติ';
+$passNote = 'หมายเหตุ: เมื่อตั้งผลเป็น “ผ่าน” ระบบจะเพิ่มวิชานี้เข้าในประวัติ (หน้า ดูรายคน/Transcript) ให้โดยอัตโนมัติ';
 
 echo render('class_attendance/view', [
     'title' => 'เช็คชื่อ: ' . (string)$session['subject_title'],
     'csrf' => $csrf,
     'session' => $session,
     'roster' => $roster,
+    'term' => $term,
     'returnDate' => $returnDate,
     'returnYear' => $returnYear,
     'error' => $error,

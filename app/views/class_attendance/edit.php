@@ -16,9 +16,12 @@ $studentCodesText = (string)($studentCodesText ?? '');
 
 $returnDate = (string)($returnDate ?? '');
 $returnYear = (int)($returnYear ?? 0);
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 
 $backQs = http_build_query(array_filter([
   'year_id' => $returnYear > 0 ? $returnYear : $yearId,
+  'term' => $term,
   'session_date' => $returnDate !== '' ? $returnDate : $sessionDate,
 ], static fn($v) => $v !== '' && $v !== 0));
 $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '');

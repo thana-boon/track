@@ -1,6 +1,8 @@
 <?php
 // Expected variables: $regs, $csrf, $filterQuery
 $regs = $regs ?? [];
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 $regsPage = (int)($regsPage ?? 1);
 $regsPageSize = (int)($regsPageSize ?? 50);
 $regsTotalCount = (int)($regsTotalCount ?? ($regsTotal ?? 0));
@@ -51,7 +53,7 @@ if ($regsPage > $totalPages) {
           <tr class="hover:bg-sand-50">
             <td class="px-4 py-3">
               <div class="font-medium">
-                <a class="hover:underline" href="/tracks/student_track?year_id=<?= (int)$r['year_id'] ?>&student_code=<?= e(rawurlencode((string)$r['student_code'])) ?>"><?= e((string)$r['first_name'] . ' ' . (string)$r['last_name']) ?></a>
+                <a class="hover:underline" href="/tracks/student_manage?year_id=<?= (int)$r['year_id'] ?>&term=<?= (int)$term ?>&student_code=<?= e(rawurlencode((string)$r['student_code'])) ?>"><?= e((string)$r['first_name'] . ' ' . (string)$r['last_name']) ?></a>
               </div>
               <div class="mt-1 text-xs text-ink-800/60"><?= e((string)$r['student_code']) ?> • <?= e((string)$r['class_level']) ?>/<?= e((string)$r['class_room']) ?> เลขที่ <?= e((string)$r['number_in_room']) ?></div>
             </td>

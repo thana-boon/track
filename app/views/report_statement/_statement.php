@@ -1,15 +1,19 @@
 <?php
 $settings = $settings ?? ['school_name' => '', 'logo_path' => ''];
 $student = $student ?? null;
-$studentRegs = $studentRegs ?? [];
+$transcriptRows = $transcriptRows ?? [];
+$yearMap = is_array($yearMap ?? null) ? $yearMap : [];
 $yearId = (int)($yearId ?? 0);
 $yearText = (string)($yearText ?? ((string)$yearId));
 
+$assetVer = trim((string)($settings['updated_at'] ?? ''));
+$assetQs = $assetVer !== '' ? ('?v=' . rawurlencode($assetVer)) : '';
+
 $schoolName = trim((string)($settings['school_name'] ?? ''));
 $logoPath = trim((string)($settings['logo_path'] ?? ''));
-$logoUrl = $logoPath !== '' ? ('/tracks/' . ltrim($logoPath, '/')) : '';
+$logoUrl = $logoPath !== '' ? ('/tracks/' . ltrim($logoPath, '/') . $assetQs) : '';
 
-$advisorName = trim((string)($settings['advisor_name'] ?? ''));
+$advisorName = trim((string)(($advisorName ?? null) !== null ? $advisorName : ($settings['advisor_name'] ?? '')));
 $registrarName = trim((string)($settings['registrar_name'] ?? ''));
 $directorName = trim((string)($settings['director_name'] ?? ''));
 
@@ -17,9 +21,9 @@ $advisorSignPath = trim((string)($settings['advisor_sign_path'] ?? ''));
 $registrarSignPath = trim((string)($settings['registrar_sign_path'] ?? ''));
 $directorSignPath = trim((string)($settings['director_sign_path'] ?? ''));
 
-$advisorSignUrl = $advisorSignPath !== '' ? ('/tracks/' . ltrim($advisorSignPath, '/')) : '';
-$registrarSignUrl = $registrarSignPath !== '' ? ('/tracks/' . ltrim($registrarSignPath, '/')) : '';
-$directorSignUrl = $directorSignPath !== '' ? ('/tracks/' . ltrim($directorSignPath, '/')) : '';
+$advisorSignUrl = $advisorSignPath !== '' ? ('/tracks/' . ltrim($advisorSignPath, '/') . $assetQs) : '';
+$registrarSignUrl = $registrarSignPath !== '' ? ('/tracks/' . ltrim($registrarSignPath, '/') . $assetQs) : '';
+$directorSignUrl = $directorSignPath !== '' ? ('/tracks/' . ltrim($directorSignPath, '/') . $assetQs) : '';
 
 $studentName = $student ? ((string)$student['first_name'] . ' ' . (string)$student['last_name']) : '';
 $studentCode = $student ? (string)$student['student_code'] : '';
@@ -76,7 +80,7 @@ $issuedDate = thai_date_long($issuedDateRaw);
     </div>
     <div class="school">
       <div class="school-name"><?= e($schoolName !== '' ? $schoolName : 'ชื่อโรงเรียน') ?></div>
-      <div class="school-sub">ใบรับรองผลการเรียนรู้ (Statement)</div>
+      <div class="school-sub">ใบรับรองผลการเรียนรู้ (Transcript)</div>
     </div>
     <div class="meta">
       <div>เลขที่เอกสาร: __________</div>
@@ -84,10 +88,10 @@ $issuedDate = thai_date_long($issuedDateRaw);
     </div>
   </div>
 
-  <div class="title">ใบแสดงรายการวิชาที่ผ่านการเรียน (Track Statement)</div>
+  <div class="title">ใบแสดงรายการวิชาที่ผ่านการเรียน (Track Transcript)</div>
 
   <?php if (!$student): ?>
-    <div class="empty">กรุณาเลือกนักเรียนเพื่อแสดงใบ Statement</div>
+    <div class="empty">กรุณาเลือกนักเรียนเพื่อแสดงใบ Transcript</div>
   <?php else: ?>
     <div class="info">
       <div class="row">
@@ -98,18 +102,45 @@ $issuedDate = thai_date_long($issuedDateRaw);
         <div><span class="k">ชั้น/ห้อง:</span> <span class="v"><?= e($studentClass) ?></span></div>
         <div><span class="k">เลขที่:</span> <span class="v"><?= e($studentNo) ?></span></div>
       </div>
-      <div class="row">
-        <div><span class="k">ปีการศึกษา:</span> <span class="v"><?= e($yearText) ?></span></div>
-        <div></div>
-      </div>
     </div>
 
     <div class="section">
-      <div class="section-title">รายการวิชาที่ลงทะเบียน</div>
+      <div class="section-title">รายการวิชา (ผ่าน/รอผล)</div>
 
-      <?php if (empty($studentRegs)): ?>
-        <div class="empty">ไม่พบรายการลงทะเบียน</div>
+      <?php if (empty($transcriptRows)): ?>
+        <div class="empty">ไม่พบข้อมูลวิชา</div>
       <?php else: ?>
+        <?php
+          // Group: year_id+term -> group_title -> rows
+          $byYearTerm = [];
+          foreach ($transcriptRows as $r) {
+            $yid = (int)($r['year_id'] ?? 0);
+            $t = (int)($r['term'] ?? 1);
+            $t = ($t === 2) ? 2 : 1;
+            $k = $yid . '-' . $t;
+
+            $gTitle = trim((string)($r['group_title'] ?? ''));
+            if ($gTitle === '') {
+              $gTitle = '-';
+            }
+
+            if (!isset($byYearTerm[$k])) {
+              $byYearTerm[$k] = ['year_id' => $yid, 'term' => $t, 'groups' => []];
+            }
+            if (!isset($byYearTerm[$k]['groups'][$gTitle])) {
+              $byYearTerm[$k]['groups'][$gTitle] = [];
+            }
+            $byYearTerm[$k]['groups'][$gTitle][] = $r;
+          }
+
+          // Sort keys by year then term
+          uksort($byYearTerm, static function ($a, $b) {
+            [$ya, $ta] = array_map('intval', explode('-', (string)$a));
+            [$yb, $tb] = array_map('intval', explode('-', (string)$b));
+            if ($ya === $yb) return $ta <=> $tb;
+            return $ya <=> $yb;
+          });
+        ?>
         <table class="tbl">
           <thead>
             <tr>
@@ -119,17 +150,54 @@ $issuedDate = thai_date_long($issuedDateRaw);
             </tr>
           </thead>
           <tbody>
-            <?php foreach ($studentRegs as $i => $r): ?>
-              <tr>
-                <td class="no"><?= (int)($i + 1) ?></td>
-                <td>
-                  <div class="subj-title"><?= e((string)$r['subject_title']) ?></div>
-                  <?php if (!empty($r['subject_description'])): ?>
-                    <div class="subj-desc"><?= e((string)$r['subject_description']) ?></div>
-                  <?php endif; ?>
-                </td>
-                <td class="date">ผ่าน</td>
+            <?php foreach ($byYearTerm as $block): ?>
+              <?php
+                $yid = (int)($block['year_id'] ?? 0);
+                $t = (int)($block['term'] ?? 1);
+                $yRow = $yearMap[$yid] ?? null;
+                $yearBe = '';
+                if (is_array($yRow)) {
+                  $yearBe = trim((string)($yRow['year_be'] ?? ''));
+                  if ($yearBe === '') {
+                    $yearBe = trim((string)($yRow['title'] ?? ''));
+                  }
+                }
+                $yearLabel = $yearBe !== '' ? ($t . '/' . $yearBe) : ($t . '/' . (string)$yid);
+              ?>
+              <tr class="year-row">
+                <td colspan="3">ปีการศึกษา <?= e($yearLabel) ?></td>
               </tr>
+
+              <?php foreach (($block['groups'] ?? []) as $gTitle => $rows): ?>
+                <tr class="group-row">
+                  <td colspan="3"><?= e((string)$gTitle) ?></td>
+                </tr>
+
+                <?php $n = 1; ?>
+                <?php foreach ($rows as $r): ?>
+                  <?php
+                    $code = trim((string)($r['subject_code'] ?? ''));
+                    $title = trim((string)($r['subject_title'] ?? ''));
+                    $desc = trim((string)($r['subject_description'] ?? ''));
+                    $line = $code !== '' ? ($code . ' ' . $title) : $title;
+                  ?>
+                  <?php
+                    $status = (string)($r['status'] ?? 'pass');
+                    $statusLabel = $status === 'pass' ? 'ผ่าน' : 'รอผล';
+                  ?>
+                  <tr>
+                    <td class="no"><?= (int)$n ?></td>
+                    <td>
+                      <div class="subj-title"><?= e($line !== '' ? $line : '-') ?></div>
+                      <?php if ($desc !== ''): ?>
+                        <div class="subj-desc"><?= e($desc) ?></div>
+                      <?php endif; ?>
+                    </td>
+                    <td class="date"><?= e($statusLabel) ?></td>
+                  </tr>
+                  <?php $n++; ?>
+                <?php endforeach; ?>
+              <?php endforeach; ?>
             <?php endforeach; ?>
           </tbody>
         </table>
@@ -170,7 +238,6 @@ $issuedDate = thai_date_long($issuedDateRaw);
     </div>
 
     <div class="note">
-      เอกสารฉบับนี้จัดทำเพื่อใช้เป็นหลักฐานแสดงรายการวิชาที่นักเรียนได้ลงทะเบียนไว้ในระบบ (Track)
     </div>
   <?php endif; ?>
 </div>

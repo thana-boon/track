@@ -2,6 +2,8 @@
 $role = (string)($role ?? 'teacher');
 $years = $years ?? [];
 $yearId = (int)($yearId ?? 0);
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 $rooms = $rooms ?? [];
 $selectedLevel = (string)($selectedLevel ?? '');
 $selectedRoom = (int)($selectedRoom ?? 0);
@@ -16,6 +18,7 @@ $roomLabel = ($selectedLevel !== '' && $selectedRoom > 0) ? ($selectedLevel . '/
 $basePath = '/tracks/class_room';
 $baseQuery = [
   'year_id' => $yearId,
+  'term' => $term,
   'class_level' => $selectedLevel,
   'class_room' => $selectedRoom,
   'ym' => $ym,
@@ -34,7 +37,7 @@ $baseQuery = [
         <?php if ($role === 'admin'): ?>
           <div class="flex items-center gap-2">
             <label class="text-xs font-medium text-ink-800/70">ปีการศึกษา</label>
-            <select class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:this.value,ym:'<?= e($ym) ?>'}).toString()">
+            <select id="crYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('crYear'); var t=document.getElementById('crTerm'); if(!y||!t) return; location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:y.value,term:t.value,ym:'<?= e($ym) ?>'}).toString();})()">
               <?php foreach ($years as $y): ?>
                 <?php
                   $id = (int)($y['id'] ?? 0);
@@ -47,8 +50,16 @@ $baseQuery = [
           </div>
 
           <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-ink-800/70">เทอม</label>
+            <select id="crTerm" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('crYear'); var t=document.getElementById('crTerm'); if(!y||!t) return; location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:y.value,term:t.value,class_level:'<?= e($selectedLevel) ?>',class_room:'<?= (int)$selectedRoom ?>',ym:'<?= e($ym) ?>'}).toString();})()">
+              <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+              <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
             <label class="text-xs font-medium text-ink-800/70">ชั้น/ห้อง</label>
-            <select class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(v){var parts=v.split('|'); var lvl=parts[0]||''; var room=parts[1]||''; location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:'<?= (int)$yearId ?>',class_level:lvl,class_room:room,ym:'<?= e($ym) ?>'}).toString();})(this.value)">
+            <select class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(v){var parts=v.split('|'); var lvl=parts[0]||''; var room=parts[1]||''; location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:'<?= (int)$yearId ?>',term:'<?= (int)$term ?>',class_level:lvl,class_room:room,ym:'<?= e($ym) ?>'}).toString();})(this.value)">
               <?php foreach ($rooms as $r): ?>
                 <?php
                   $lvl = (string)($r['class_level'] ?? '');
@@ -67,7 +78,7 @@ $baseQuery = [
 
         <div class="flex items-center gap-2">
           <label class="text-xs font-medium text-ink-800/70">เดือน</label>
-          <input type="month" value="<?= e($ym) ?>" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:'<?= (int)$yearId ?>',class_level:'<?= e($selectedLevel) ?>',class_room:'<?= (int)$selectedRoom ?>',ym:this.value}).toString()" />
+          <input type="month" value="<?= e($ym) ?>" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:'<?= (int)$yearId ?>',term:'<?= (int)$term ?>',class_level:'<?= e($selectedLevel) ?>',class_room:'<?= (int)$selectedRoom ?>',ym:this.value}).toString()" />
         </div>
       </div>
     </div>
@@ -130,8 +141,10 @@ $baseQuery = [
 
                 $studentQs = http_build_query(array_filter([
                   'year_id' => $yearId,
+                  'term' => $term,
                   'student_code' => $code,
                   'return_year_id' => $yearId,
+                  'return_term' => $term,
                   'return_class_level' => $selectedLevel,
                   'return_class_room' => $selectedRoom,
                   'return_ym' => $ym,

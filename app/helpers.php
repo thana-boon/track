@@ -68,6 +68,23 @@ function query_string(string $key): string
     return is_string($value) ? trim($value) : '';
 }
 
+function term_from_request(int $default = 1): int
+{
+    $raw = query_string('term');
+    if ($raw === '') {
+        $raw = input_string('term');
+    }
+    $raw = trim((string)$raw);
+
+    if ($raw === '2') {
+        return 2;
+    }
+    if ($raw === '1') {
+        return 1;
+    }
+    return $default === 2 ? 2 : 1;
+}
+
 function client_ip(): string
 {
     $ip = '';

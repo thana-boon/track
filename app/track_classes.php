@@ -9,14 +9,15 @@ function track_class_tables_ensure(): void
         "CREATE TABLE IF NOT EXISTS track_class_sessions (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             year_id INT UNSIGNED NOT NULL,
+            term TINYINT UNSIGNED NOT NULL DEFAULT 1,
             subject_id INT UNSIGNED NOT NULL,
             session_date DATE NOT NULL,
             note VARCHAR(255) NOT NULL DEFAULT '',
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY idx_track_class_year_date (year_id, session_date),
-            KEY idx_track_class_subject_date (subject_id, session_date)
+            KEY idx_track_class_year_term_date (year_id, term, session_date),
+            KEY idx_track_class_subject_term_date (subject_id, term, session_date)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
     );
 
@@ -34,8 +35,11 @@ function track_class_tables_ensure(): void
 
     // Best-effort migrations for older installs
     $migrations = [
+        "ALTER TABLE track_class_sessions ADD COLUMN term TINYINT UNSIGNED NOT NULL DEFAULT 1",
         "ALTER TABLE track_class_sessions ADD COLUMN note VARCHAR(255) NOT NULL DEFAULT ''",
         "ALTER TABLE track_class_sessions DROP INDEX uq_track_class_session",
+        "ALTER TABLE track_class_sessions ADD KEY idx_track_class_year_term_date (year_id, term, session_date)",
+        "ALTER TABLE track_class_sessions ADD KEY idx_track_class_subject_term_date (subject_id, term, session_date)",
         "ALTER TABLE track_class_students ADD COLUMN attend_status TINYINT NULL DEFAULT NULL",
         "ALTER TABLE track_class_students ADD COLUMN result_status VARCHAR(10) NOT NULL DEFAULT 'pending'",
         "ALTER TABLE track_class_students ADD COLUMN checked_at TIMESTAMP NULL DEFAULT NULL",
@@ -98,7 +102,7 @@ function thai_date_long(string $ymd): string
     return 'วัน' . $wd . 'ที่ ' . $d . ' ' . $mn . ' ' . $y;
 }
 
-function track_class_session_create(int $yearId, int $subjectId, string $sessionDate, string $note, array $studentCodes): int
+function track_class_session_create(int $yearId, int $term, int $subjectId, string $sessionDate, string $note, array $studentCodes): int
 {
     track_class_tables_ensure();
     track_subjects_table_ensure();
@@ -106,6 +110,8 @@ function track_class_session_create(int $yearId, int $subjectId, string $session
     if ($yearId <= 0 || $subjectId <= 0) {
         throw new RuntimeException('ข้อมูลไม่ถูกต้อง');
     }
+
+    $term = ($term === 2) ? 2 : 1;
 
     $sessionDate = trim($sessionDate);
     if ($sessionDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $sessionDate)) {
@@ -131,8 +137,8 @@ function track_class_session_create(int $yearId, int $subjectId, string $session
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare('INSERT INTO track_class_sessions (year_id, subject_id, session_date, note) VALUES (?, ?, ?, ?)');
-        $stmt->execute([$yearId, $subjectId, $sessionDate, $note]);
+        $stmt = $pdo->prepare('INSERT INTO track_class_sessions (year_id, term, subject_id, session_date, note) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$yearId, $term, $subjectId, $sessionDate, $note]);
         $sessionId = (int)$pdo->lastInsertId();
 
         $stmtIns = $pdo->prepare('INSERT IGNORE INTO track_class_students (session_id, student_code) VALUES (?, ?)');
@@ -166,7 +172,7 @@ function track_class_session_get(int $sessionId): ?array
 
     $pdo = db_app();
     $stmt = $pdo->prepare(
-        'SELECT s.id, s.year_id, s.subject_id, s.session_date, s.note, s.created_at, s.updated_at, subj.title AS subject_title, subj.description AS subject_description '
+        'SELECT s.id, s.year_id, s.term, s.subject_id, s.session_date, s.note, s.created_at, s.updated_at, subj.title AS subject_title, subj.description AS subject_description '
         . 'FROM track_class_sessions s '
         . 'JOIN track_subjects subj ON subj.id = s.subject_id '
         . 'WHERE s.id = ? LIMIT 1'
@@ -180,7 +186,7 @@ function track_class_session_get(int $sessionId): ?array
  * List sessions (recent first).
  * @return array<int, array<string,mixed>>
  */
-function track_class_sessions_list(int $yearId, int $limit = 50): array
+function track_class_sessions_list(int $yearId, int $term, int $limit = 50): array
 {
     track_class_tables_ensure();
 
@@ -189,21 +195,23 @@ function track_class_sessions_list(int $yearId, int $limit = 50): array
         return [];
     }
 
+    $term = ($term === 2) ? 2 : 1;
+
     $pdo = db_app();
     $stmt = $pdo->prepare(
         'SELECT s.id, s.year_id, s.subject_id, s.session_date, s.note, s.created_at, subj.title AS subject_title '
         . 'FROM track_class_sessions s '
         . 'JOIN track_subjects subj ON subj.id = s.subject_id '
-        . 'WHERE s.year_id = ? '
+        . 'WHERE s.year_id = ? AND s.term = ? '
         . 'ORDER BY s.session_date DESC, s.id DESC '
         . 'LIMIT ' . (int)$limit
     );
-    $stmt->execute([$yearId]);
+    $stmt->execute([$yearId, $term]);
     return $stmt->fetchAll();
 }
 
 /** Get latest session date for a year (YYYY-MM-DD) or null if none. */
-function track_class_latest_session_date(int $yearId): ?string
+function track_class_latest_session_date(int $yearId, int $term): ?string
 {
     track_class_tables_ensure();
 
@@ -212,9 +220,11 @@ function track_class_latest_session_date(int $yearId): ?string
         return null;
     }
 
+    $term = ($term === 2) ? 2 : 1;
+
     $pdo = db_app();
-    $stmt = $pdo->prepare('SELECT session_date FROM track_class_sessions WHERE year_id = ? ORDER BY session_date DESC, id DESC LIMIT 1');
-    $stmt->execute([$yearId]);
+    $stmt = $pdo->prepare('SELECT session_date FROM track_class_sessions WHERE year_id = ? AND term = ? ORDER BY session_date DESC, id DESC LIMIT 1');
+    $stmt->execute([$yearId, $term]);
     $val = $stmt->fetchColumn();
     return is_string($val) && $val !== '' ? $val : null;
 }
@@ -223,11 +233,12 @@ function track_class_latest_session_date(int $yearId): ?string
  * List sessions for a given date (with student count).
  * @return array<int, array<string,mixed>>
  */
-function track_class_sessions_for_date(int $yearId, string $sessionDate): array
+function track_class_sessions_for_date(int $yearId, int $term, string $sessionDate): array
 {
     track_class_tables_ensure();
 
     $yearId = (int)$yearId;
+    $term = ($term === 2) ? 2 : 1;
     $sessionDate = trim($sessionDate);
     if ($yearId <= 0 || $sessionDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $sessionDate)) {
         return [];
@@ -239,11 +250,11 @@ function track_class_sessions_for_date(int $yearId, string $sessionDate): array
         . 'FROM track_class_sessions s '
         . 'JOIN track_subjects subj ON subj.id = s.subject_id '
         . 'LEFT JOIN (SELECT session_id, COUNT(*) AS c FROM track_class_students GROUP BY session_id) cnt ON cnt.session_id = s.id '
-        . 'WHERE s.year_id = ? AND s.session_date = ? '
+        . 'WHERE s.year_id = ? AND s.term = ? AND s.session_date = ? '
         . 'ORDER BY subj.title, s.id';
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$yearId, $sessionDate]);
+    $stmt->execute([$yearId, $term, $sessionDate]);
     return $stmt->fetchAll();
 }
 
@@ -251,10 +262,11 @@ function track_class_sessions_for_date(int $yearId, string $sessionDate): array
  * List distinct session dates in a given month (YYYY-MM) for a year.
  * @return array<int, string> Dates in Y-m-d
  */
-function track_class_session_dates_in_month(int $yearId, string $ym): array
+function track_class_session_dates_in_month(int $yearId, int $term, string $ym): array
 {
     track_class_tables_ensure();
 
+    $term = ($term === 2) ? 2 : 1;
     $ym = trim($ym);
     if ($yearId <= 0 || !preg_match('/^\d{4}-\d{2}$/', $ym)) {
         return [];
@@ -268,8 +280,8 @@ function track_class_session_dates_in_month(int $yearId, string $ym): array
     }
 
     $pdo = db_app();
-    $stmt = $pdo->prepare('SELECT DISTINCT session_date FROM track_class_sessions WHERE year_id = ? AND session_date BETWEEN ? AND ? ORDER BY session_date');
-    $stmt->execute([$yearId, $start->format('Y-m-d'), $end->format('Y-m-d')]);
+    $stmt = $pdo->prepare('SELECT DISTINCT session_date FROM track_class_sessions WHERE year_id = ? AND term = ? AND session_date BETWEEN ? AND ? ORDER BY session_date');
+    $stmt->execute([$yearId, $term, $start->format('Y-m-d'), $end->format('Y-m-d')]);
 
     $out = [];
     foreach ($stmt->fetchAll() as $row) {
@@ -362,7 +374,7 @@ function track_class_save_check(int $sessionId, array $attendMap, array $resultM
     $passedAdded = 0;
     if (count($passedCodes) > 0) {
         // Add to student record (registration) when marked as pass.
-        $passedAdded = track_reg_assign_bulk((int)$session['year_id'], (int)$session['subject_id'], $passedCodes);
+        $passedAdded = track_reg_assign_bulk_for_term((int)$session['year_id'], (int)($session['term'] ?? 1), (int)$session['subject_id'], $passedCodes, 'pass');
     }
 
     return ['updated' => $updated, 'passed_added' => $passedAdded];
@@ -475,4 +487,122 @@ function track_class_session_delete(int $sessionId): void
         }
         throw $e;
     }
+}
+
+/**
+ * Passed-subject transcript rows for a student across all years/terms.
+ * @return array<int, array<string,mixed>>
+ */
+function track_transcript_passed_rows(string $studentCode): array
+{
+    track_class_tables_ensure();
+    track_subjects_table_ensure();
+    track_groups_table_ensure();
+
+    $studentCode = trim($studentCode);
+    if ($studentCode === '') {
+        return [];
+    }
+
+    $pdo = db_app();
+    $stmt = $pdo->prepare(
+        'SELECT DISTINCT sess.year_id, sess.term, subj.group_id, g.title AS group_title, subj.subject_code, subj.title AS subject_title, subj.description AS subject_description '
+        . 'FROM track_class_students cs '
+        . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
+        . 'JOIN track_subjects subj ON subj.id = sess.subject_id '
+        . 'LEFT JOIN track_groups g ON g.id = subj.group_id '
+        . 'WHERE cs.student_code = ? AND cs.result_status = \'pass\' '
+        . 'ORDER BY sess.year_id ASC, sess.term ASC, COALESCE(g.title, \'\') ASC, COALESCE(subj.subject_code, \'\') ASC, subj.title ASC'
+    );
+    $stmt->execute([$studentCode]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Transcript rows for a student across all years/terms.
+ * Includes subjects that are registered (from register_track) and/or passed (from attendance results).
+ * If both exist for the same year+term+subject, the status becomes "pass".
+ * @return array<int, array<string,mixed>>
+ */
+function track_transcript_rows(string $studentCode): array
+{
+    track_class_tables_ensure();
+    track_registrations_table_ensure();
+    track_subjects_table_ensure();
+    track_groups_table_ensure();
+
+    $studentCode = trim($studentCode);
+    if ($studentCode === '') {
+        return [];
+    }
+
+    $pdo = db_app();
+
+    // 1) Registered subjects (status=registered or pass)
+    $stmtReg = $pdo->prepare(
+        'SELECT DISTINCT r.year_id, r.term, subj.id AS subject_id, subj.group_id, g.title AS group_title, '
+        . 'subj.subject_code, subj.title AS subject_title, subj.description AS subject_description, '
+        . "(CASE WHEN r.result_status = 'pass' THEN 'pass' ELSE 'registered' END) AS status "
+        . 'FROM track_registrations r '
+        . 'JOIN track_subjects subj ON subj.id = r.subject_id '
+        . 'LEFT JOIN track_groups g ON g.id = subj.group_id '
+        . 'WHERE r.student_code = ?'
+    );
+    $stmtReg->execute([$studentCode]);
+    $regRows = $stmtReg->fetchAll();
+
+    // 2) Passed subjects (status=pass)
+    $stmtPass = $pdo->prepare(
+        'SELECT DISTINCT sess.year_id, sess.term, subj.id AS subject_id, subj.group_id, g.title AS group_title, '
+        . 'subj.subject_code, subj.title AS subject_title, subj.description AS subject_description, '
+        . "'pass' AS status "
+        . 'FROM track_class_students cs '
+        . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
+        . 'JOIN track_subjects subj ON subj.id = sess.subject_id '
+        . 'LEFT JOIN track_groups g ON g.id = subj.group_id '
+        . 'WHERE cs.student_code = ? AND cs.result_status = \'pass\''
+    );
+    $stmtPass->execute([$studentCode]);
+    $passRows = $stmtPass->fetchAll();
+
+    // Merge with preference: pass > registered
+    $byKey = [];
+    foreach ($regRows as $r) {
+        $key = (int)($r['year_id'] ?? 0) . '-' . (int)($r['term'] ?? 1) . '-' . (int)($r['subject_id'] ?? 0);
+        if (!isset($byKey[$key])) {
+            $byKey[$key] = $r;
+        }
+    }
+    foreach ($passRows as $r) {
+        $key = (int)($r['year_id'] ?? 0) . '-' . (int)($r['term'] ?? 1) . '-' . (int)($r['subject_id'] ?? 0);
+        $byKey[$key] = $r;
+    }
+
+    $rows = array_values($byKey);
+
+    usort($rows, static function (array $a, array $b): int {
+        $ya = (int)($a['year_id'] ?? 0);
+        $yb = (int)($b['year_id'] ?? 0);
+        if ($ya !== $yb) return $ya <=> $yb;
+
+        $ta = (int)($a['term'] ?? 1);
+        $tb = (int)($b['term'] ?? 1);
+        if ($ta !== $tb) return $ta <=> $tb;
+
+        $ga = (string)($a['group_title'] ?? '');
+        $gb = (string)($b['group_title'] ?? '');
+        $c = strcmp($ga, $gb);
+        if ($c !== 0) return $c;
+
+        $ca = (string)($a['subject_code'] ?? '');
+        $cb = (string)($b['subject_code'] ?? '');
+        $c2 = strcmp($ca, $cb);
+        if ($c2 !== 0) return $c2;
+
+        $ta2 = (string)($a['subject_title'] ?? '');
+        $tb2 = (string)($b['subject_title'] ?? '');
+        return strcmp($ta2, $tb2);
+    });
+
+    return $rows;
 }

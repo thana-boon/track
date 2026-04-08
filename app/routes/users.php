@@ -111,6 +111,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'update_user') {
+            $id = (int)input_string('id');
+            $display = input_string('displayname');
+            $role = strtolower(trim(input_string('role')));
+
+            if ($display === '') {
+                throw new RuntimeException('กรุณากรอกชื่อที่แสดง');
+            }
+            if (!in_array($role, ['admin', 'teacher', 'student'], true)) {
+                throw new RuntimeException('role ไม่ถูกต้อง');
+            }
+
+            $stmt = $pdo->prepare('UPDATE users SET displayname = :d, role = :r WHERE id = :id');
+            $stmt->execute([':d' => $display, ':r' => $role, ':id' => $id]);
+
+            flash_set('success', 'บันทึกข้อมูลผู้ใช้แล้ว');
+            header('Location: ' . $back);
+            exit;
+        }
+
         if ($action === 'import') {
             $importText = trim(input_string('import_text'));
             $defaultRole = strtolower(trim(input_string('default_role')));
@@ -171,11 +191,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'import_csv') {
-            $defaultRole = strtolower(trim(input_string('default_role')));
-            if (!in_array($defaultRole, ['admin', 'teacher', 'student'], true)) {
-                $defaultRole = 'teacher';
-            }
-
             $file = $_FILES['import_file'] ?? null;
             if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
                 throw new RuntimeException('กรุณาเลือกไฟล์ CSV');
@@ -202,8 +217,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $row = array_map(static fn($v) => trim((string)$v), $row);
-                $row = array_values(array_filter($row, static fn($v) => $v !== ''));
-                if (empty($row)) {
+                // Keep empty columns to preserve positions (username, displayname, password, role)
+                $isAllEmpty = true;
+                foreach ($row as $cell) {
+                    if ($cell !== '') {
+                        $isAllEmpty = false;
+                        break;
+                    }
+                }
+                if ($isAllEmpty) {
                     continue;
                 }
 
@@ -215,8 +237,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
+                if (count($row) < 4) {
+                    throw new RuntimeException('ไฟล์ CSV ต้องมีคอลัมน์: username,displayname,password,role (แถวที่ ' . $rowIndex . ')');
+                }
+
                 // Format (recommended): username, displayname, password, role
-                // Also accepts: username, displayname, password  (role uses default)
                 $username = (string)($row[0] ?? '');
                 $displayname = (string)($row[1] ?? '');
                 $password = (string)($row[2] ?? '');
@@ -232,8 +257,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $skipped++;
                     continue;
                 }
+                if ($role === '') {
+                    throw new RuntimeException('ไฟล์ CSV ต้องระบุ role ทุกแถว (แถวที่ ' . $rowIndex . ')');
+                }
                 if (!in_array($role, ['admin', 'teacher', 'student'], true)) {
-                    $role = $defaultRole;
+                    throw new RuntimeException('role ไม่ถูกต้อง (แถวที่ ' . $rowIndex . ')');
                 }
 
                 try {

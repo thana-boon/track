@@ -39,6 +39,8 @@ if (!$yearIdValid) {
     $yearId = $defaultYearId;
 }
 
+$term = term_from_request(track_active_term());
+
 $error = null;
 $success = flash_get('success');
 
@@ -58,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             track_class_advisor_set($postYearId, $classLevel, $classRoom, $teacherIdOrNull);
 
             flash_set('success', 'บันทึกครูประจำชั้นแล้ว');
-            header('Location: /tracks/class_advisors?year_id=' . (int)$postYearId);
+            header('Location: /tracks/class_advisors?year_id=' . (int)$postYearId . '&term=' . $term);
             exit;
         }
 
@@ -97,7 +99,7 @@ if ($yearId > 0) {
 }
 
 $pdoApp = db_app();
-$teachers = $pdoApp->query("SELECT id, displayname, username FROM users WHERE role = 'teacher' ORDER BY displayname, username")->fetchAll();
+$teachers = $pdoApp->query("SELECT id, displayname, username, role FROM users WHERE role IN ('teacher','admin') ORDER BY (role='admin') DESC, displayname, username")->fetchAll();
 
 $advisorMap = track_class_advisors_map($yearId);
 
@@ -108,6 +110,7 @@ echo render('class_advisors/index', [
     'csrf' => $csrf,
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'classes' => $classes,
     'teachers' => $teachers,
     'advisorMap' => $advisorMap,

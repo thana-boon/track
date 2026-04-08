@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_auth();
 track_registrations_table_ensure();
 track_subjects_table_ensure();
+track_class_tables_ensure();
 report_settings_table_ensure();
 
 $pdoSchool = db_school();
@@ -50,6 +51,8 @@ $q = query_string('q');
 $studentCode = query_string('student_code');
 $isPrint = query_string('print') === '1';
 
+$term = term_from_request(track_active_term());
+
 $settings = report_settings_get();
 
 $error = null;
@@ -58,7 +61,7 @@ $success = flash_get('success');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = input_string('action');
 
-    $back = '/tracks/report_statement?year_id=' . $yearId;
+    $back = '/tracks/report_statement?year_id=' . $yearId . '&term=' . $term;
     if ($level !== '') $back .= '&class_level=' . rawurlencode($level);
     if ($room !== '') $back .= '&room=' . rawurlencode($room);
     if ($q !== '') $back .= '&q=' . rawurlencode($q);
@@ -115,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'print_bulk') {
             csrf_verify();
             // Print many students in one A4-per-student document.
+            $settingsForPrint = report_settings_get();
             $scope = input_string('print_scope'); // selected|all_filtered
             $codes = $_POST['student_codes'] ?? [];
             if (!is_array($codes)) {
@@ -135,17 +139,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($codes as $c) {
                 $st = school_student_get($yearId, $c);
                 if (!$st) {
+                    $st = school_student_get_any_year($c);
+                }
+                if (!$st) {
                     continue;
                 }
-                $regs = track_registrations_for_student($yearId, (string)$st['student_code']);
-                $printStudents[] = ['student' => $st, 'regs' => $regs];
+                $transcriptRows = track_transcript_rows((string)$st['student_code']);
+                $advisorNameResolved = track_class_advisor_name(
+                    (int)($st['year_id'] ?? $yearId),
+                    (string)($st['class_level'] ?? ''),
+                    (int)($st['class_room'] ?? 0)
+                );
+                if ($advisorNameResolved === '') {
+                    $advisorNameResolved = trim((string)($settingsForPrint['advisor_name'] ?? ''));
+                }
+                $printStudents[] = ['student' => $st, 'transcriptRows' => $transcriptRows, 'advisorName' => $advisorNameResolved];
             }
 
             $viewData = [
-                'title' => 'ใบ Statement',
+                'title' => 'ใบ Transcript',
                 'yearId' => $yearId,
                 'yearText' => $yearText !== '' ? $yearText : (string)$yearId,
-                'settings' => report_settings_get(),
+                'settings' => $settingsForPrint,
+                'yearMap' => array_column($years, null, 'id'),
                 'printStudents' => $printStudents,
             ];
 
@@ -167,19 +183,35 @@ if ($yearId > 0) {
 }
 
 $student = null;
-$studentRegs = [];
+$transcriptRows = [];
+$advisorNameResolved = '';
 if ($yearId > 0 && $studentCode !== '') {
     $student = school_student_get($yearId, $studentCode);
+    if (!$student) {
+        $student = school_student_get_any_year($studentCode);
+    }
     if ($student) {
-        $studentRegs = track_registrations_for_student($yearId, (string)$student['student_code']);
+        $transcriptRows = track_transcript_rows((string)$student['student_code']);
+
+        $advisorNameResolved = track_class_advisor_name(
+            (int)($student['year_id'] ?? $yearId),
+            (string)($student['class_level'] ?? ''),
+            (int)($student['class_room'] ?? 0)
+        );
     }
 }
 
+if ($advisorNameResolved === '') {
+    $advisorNameResolved = trim((string)($settings['advisor_name'] ?? ''));
+}
+
 $viewData = [
-    'title' => 'ใบ Statement',
+    'title' => 'ใบ Transcript',
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'yearText' => $yearText !== '' ? $yearText : (string)$yearId,
+    'yearMap' => array_column($years, null, 'id'),
     'filters' => [
         'class_level' => $level,
         'room' => $room,
@@ -194,8 +226,9 @@ $viewData = [
     ],
     'students' => $students,
     'settings' => $settings,
+    'advisorName' => $advisorNameResolved,
     'student' => $student,
-    'studentRegs' => $studentRegs,
+    'transcriptRows' => $transcriptRows,
     'error' => $error,
     'success' => $success,
 ];

@@ -1,6 +1,7 @@
 <?php
 $csrf = csrf_token();
 $editing = is_array($editing ?? null) ? $editing : null;
+$groups = is_array($groups ?? null) ? $groups : [];
 ?>
 
 <div class="grid gap-6">
@@ -33,12 +34,35 @@ $editing = is_array($editing ?? null) ? $editing : null;
         <h2 class="text-sm font-semibold"><?= $editing ? '✏️ แก้ไขวิชา' : '➕ เพิ่มวิชา' ?></h2>
         <p class="mt-1 text-xs text-ink-800/60">ตัวอย่าง: การจัดการครัว, การสร้างโปรแกรม, คณิตขั้นสูง</p>
 
+        <?php if (empty($groups)): ?>
+          <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            ยังไม่มีกลุ่ม Track — กรุณาสร้างกลุ่มก่อนที่ <a class="underline" href="/tracks/track-groups">หน้า กลุ่ม Track</a>
+          </div>
+        <?php endif; ?>
+
         <form method="post" class="mt-4 space-y-3">
           <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
           <input type="hidden" name="action" value="<?= $editing ? 'update' : 'create' ?>" />
           <?php if ($editing): ?>
             <input type="hidden" name="id" value="<?= (int)$editing['id'] ?>" />
           <?php endif; ?>
+
+          <div>
+            <label class="text-xs font-medium">กลุ่ม Track</label>
+            <select name="group_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" <?= empty($groups) ? 'disabled' : '' ?>>
+              <option value="">— เลือกกลุ่ม —</option>
+              <?php $selectedGroupId = (int)($editing['group_id'] ?? 0); ?>
+              <?php foreach ($groups as $g): ?>
+                <?php $gid = (int)($g['id'] ?? 0); ?>
+                <option value="<?= $gid ?>" <?= ($gid > 0 && $gid === $selectedGroupId) ? 'selected' : '' ?>><?= e((string)$g['title']) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium">รหัสวิชา</label>
+            <input name="subject_code" value="<?= e((string)($editing['subject_code'] ?? '')) ?>" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เช่น ENG101" />
+          </div>
 
           <div>
             <label class="text-xs font-medium">ชื่อวิชา</label>
@@ -71,7 +95,7 @@ $editing = is_array($editing ?? null) ? $editing : null;
 
       <div class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/25 p-5">
         <h2 class="text-sm font-semibold">📦 Import CSV</h2>
-        <p class="mt-1 text-xs text-ink-800/60">คอลัมน์: <span class="font-mono">title,description,is_active</span> (มี header หรือไม่มีก็ได้)</p>
+        <p class="mt-1 text-xs text-ink-800/60">คอลัมน์ใหม่: <span class="font-mono">subject_code,title,group_title,description,is_active</span> (รองรับไฟล์แบบเก่า <span class="font-mono">title,description,is_active</span> ด้วย)</p>
 
         <form method="post" enctype="multipart/form-data" class="mt-4 space-y-3">
           <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
@@ -104,6 +128,8 @@ $editing = is_array($editing ?? null) ? $editing : null;
       <table class="min-w-full bg-white text-sm">
         <thead class="bg-sand-100 text-left text-xs text-ink-800/70">
           <tr>
+            <th class="px-4 py-3">🔤 รหัส</th>
+            <th class="px-4 py-3">🧩 กลุ่ม</th>
             <th class="px-4 py-3">🧩 วิชา</th>
             <th class="px-4 py-3">สถานะ</th>
             <th class="px-4 py-3">อัปเดต</th>
@@ -113,6 +139,14 @@ $editing = is_array($editing ?? null) ? $editing : null;
         <tbody class="divide-y divide-black/5">
           <?php foreach (($subjects ?? []) as $s): ?>
             <tr class="hover:bg-sand-50">
+              <td class="px-4 py-3 text-xs text-ink-800/80">
+                <span class="rounded-xl border border-black/10 bg-white px-2.5 py-1">
+                  <?= e((string)($s['subject_code'] ?? '-')) ?>
+                </span>
+              </td>
+              <td class="px-4 py-3 text-xs text-ink-800/70">
+                <?= e((string)($s['group_title'] ?? '-')) ?>
+              </td>
               <td class="px-4 py-3">
                 <div class="font-medium"><?= e((string)$s['title']) ?></div>
                 <?php if (!empty($s['description'])): ?>
@@ -145,7 +179,7 @@ $editing = is_array($editing ?? null) ? $editing : null;
 
           <?php if (empty($subjects)): ?>
             <tr>
-              <td colspan="4" class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีวิชา—ลองเพิ่มวิชาแรกได้เลย</td>
+              <td colspan="6" class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีวิชา—ลองเพิ่มวิชาแรกได้เลย</td>
             </tr>
           <?php endif; ?>
         </tbody>

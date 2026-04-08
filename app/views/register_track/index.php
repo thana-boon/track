@@ -5,11 +5,15 @@ $subjects = $subjects ?? [];
 $students = $students ?? [];
 $regs = $regs ?? [];
 
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
+
 $activeSubjects = array_values(array_filter($subjects, static fn($s) => (int)($s['is_active'] ?? 0) === 1));
 
 $basePath = '/tracks/register_track';
 $filterBaseQuery = http_build_query(array_filter([
   'year_id' => (int)($yearId ?? 0),
+  'term' => $term,
   'class_level' => (string)($filters['class_level'] ?? ''),
   'room' => (string)($filters['room'] ?? ''),
   'q' => (string)($filters['q'] ?? ''),
@@ -55,6 +59,14 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
             ?>
             <option value="<?= $id ?>" <?= ($id === (int)($yearId ?? 0)) ? 'selected' : '' ?>><?= e($label . $active) ?></option>
           <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs font-medium">เทอม</label>
+        <select name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+          <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+          <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
         </select>
       </div>
 

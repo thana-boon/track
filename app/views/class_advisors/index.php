@@ -5,6 +5,8 @@ $classes = $classes ?? [];
 $teachers = $teachers ?? [];
 $advisorMap = $advisorMap ?? [];
 $csrf = (string)($csrf ?? csrf_token());
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 ?>
 
 <div class="grid gap-6">
@@ -12,12 +14,12 @@ $csrf = (string)($csrf ?? csrf_token());
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">👩‍🏫 กำหนดครูประจำชั้น</h1>
-        <p class="mt-1 text-sm text-ink-800/70">รายชื่อชั้นเรียนดึงจากฐานข้อมูลนักเรียน • เลือกครูจากผู้ใช้ที่ role = teacher</p>
+        <p class="mt-1 text-sm text-ink-800/70">รายชื่อชั้นเรียนดึงจากฐานข้อมูลนักเรียน • เลือกผู้ใช้ที่ role = teacher หรือ admin</p>
       </div>
 
       <div class="flex items-center gap-2">
         <label class="text-xs font-medium text-ink-800/70">ปีการศึกษา</label>
-        <select class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_advisors?year_id='+encodeURIComponent(this.value)">
+        <select id="caYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('caYear'); var t=document.getElementById('caTerm'); if(!y||!t) return; location.href='/tracks/class_advisors?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
           <?php foreach ($years as $y): ?>
             <?php
               $id = (int)($y['id'] ?? 0);
@@ -26,6 +28,12 @@ $csrf = (string)($csrf ?? csrf_token());
             ?>
             <option value="<?= $id ?>" <?= $id === $yearId ? 'selected' : '' ?>><?= e($label . $active) ?></option>
           <?php endforeach; ?>
+        </select>
+
+        <label class="text-xs font-medium text-ink-800/70">เทอม</label>
+        <select id="caTerm" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('caYear'); var t=document.getElementById('caTerm'); if(!y||!t) return; location.href='/tracks/class_advisors?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
+          <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+          <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
         </select>
       </div>
     </div>
@@ -71,6 +79,7 @@ $csrf = (string)($csrf ?? csrf_token());
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                     <input type="hidden" name="action" value="set_advisor" />
                     <input type="hidden" name="year_id" value="<?= (int)$yearId ?>" />
+                    <input type="hidden" name="term" value="<?= (int)$term ?>" />
                     <input type="hidden" name="class_level" value="<?= e($level) ?>" />
                     <input type="hidden" name="class_room" value="<?= (int)$room ?>" />
 
@@ -81,8 +90,10 @@ $csrf = (string)($csrf ?? csrf_token());
                           $tid = (int)($t['id'] ?? 0);
                           $dn = (string)($t['displayname'] ?? '');
                           $un = (string)($t['username'] ?? '');
+                          $r = (string)($t['role'] ?? '');
                           $label = trim($dn !== '' ? $dn : $un);
                           if ($dn !== '' && $un !== '') $label .= ' (' . $un . ')';
+                          if ($r === 'admin') $label .= ' • admin';
                         ?>
                         <option value="<?= $tid ?>" <?= $tid === $selectedTeacherId ? 'selected' : '' ?>><?= e($label) ?></option>
                       <?php endforeach; ?>
@@ -112,7 +123,7 @@ $csrf = (string)($csrf ?? csrf_token());
 
       <?php if (empty($teachers)): ?>
         <div class="border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60">
-          หมายเหตุ: ยังไม่มีผู้ใช้ที่ role = teacher • ไปที่หน้า “ผู้ใช้” เพื่อสร้างครูก่อน
+          หมายเหตุ: ยังไม่มีผู้ใช้ที่ role = teacher หรือ admin • ไปที่หน้า “ผู้ใช้” เพื่อสร้างผู้ใช้ก่อน
         </div>
       <?php endif; ?>
     </div>

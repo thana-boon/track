@@ -31,6 +31,8 @@ if (!$yearValid) {
     $yearId = $defaultYearId;
 }
 
+$term = term_from_request(track_active_term());
+
 $subjects = track_subjects_all();
 $subjectId = (int)(query_string('subject_id') !== '' ? query_string('subject_id') : '0');
 if ($subjectId <= 0) {
@@ -118,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $codes = array_keys($uniq);
 
-            $sessionId = track_class_session_create($yearIdPost, $subjectIdPost, $sessionDate, $note, $codes);
+            $sessionId = track_class_session_create($yearIdPost, $term, $subjectIdPost, $sessionDate, $note, $codes);
             flash_set('success', 'สร้างรอบเรียนแล้ว ✅');
             header('Location: /tracks/class_attendance_view?id=' . $sessionId);
             exit;
@@ -137,6 +139,7 @@ echo render('class_attendance/create', [
     'csrf' => $csrf,
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'subjects' => $subjects,
     'subjectId' => $subjectId,
     'classLevelOptions' => $classLevelOptions,

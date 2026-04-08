@@ -6,10 +6,13 @@ $settings = $settings ?? ['school_name' => '', 'logo_path' => ''];
 $student = $student ?? null;
 
 $yearId = (int)($yearId ?? 0);
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 $selectedCode = (string)($filters['student_code'] ?? '');
 
 $query = http_build_query(array_filter([
   'year_id' => $yearId,
+  'term' => $term,
   'class_level' => (string)($filters['class_level'] ?? ''),
   'room' => (string)($filters['room'] ?? ''),
   'q' => (string)($filters['q'] ?? ''),
@@ -25,40 +28,42 @@ $printHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . '
     /* Statement preview styling (matches print as close as possible) */
     .statement { font-family: "TH Sarabun New", "TH SarabunPSK", "Sarabun", "Noto Sans Thai", sans-serif; color: #111; }
     .a4 { width: 210mm; min-height: 297mm; }
-    .statement { box-sizing: border-box; padding: 12mm; font-size: 18pt; line-height: 1.25; }
-    .statement .header { display: grid; grid-template-columns: 26mm 1fr 58mm; gap: 10mm; align-items: center; }
-    .statement .logo img { width: 26mm; height: 26mm; object-fit: contain; }
-    .statement .logo-placeholder { width: 26mm; height: 26mm; display: grid; place-items: center; border: 1px dashed #999; font-size: 12pt; color: #666; }
-    .statement .school-name { font-size: 24pt; font-weight: 700; text-align: center; }
-    .statement .school-sub { font-size: 16pt; text-align: center; color: #444; margin-top: 1mm; }
-    .statement .meta { font-size: 14pt; color: #222; text-align: right; }
-    .statement .title { margin-top: 6mm; text-align: center; font-size: 22pt; font-weight: 700; }
-    .statement .info { margin-top: 6mm; border: 1px solid #222; padding: 4mm; }
-    .statement .info .row { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+    .statement { box-sizing: border-box; padding: 8mm; font-size: 16pt; line-height: 1.18; }
+    .statement .header { display: grid; grid-template-columns: 52mm 1fr 52mm; gap: 7mm; align-items: center; }
+    .statement .logo img { width: 22mm; height: 22mm; object-fit: contain; }
+    .statement .logo-placeholder { width: 22mm; height: 22mm; display: grid; place-items: center; border: 1px dashed #999; font-size: 11pt; color: #666; }
+    .statement .school-name { font-size: 21pt; font-weight: 700; text-align: center; }
+    .statement .school-sub { font-size: 14pt; text-align: center; color: #444; margin-top: 0.8mm; }
+    .statement .meta { font-size: 12pt; color: #222; text-align: right; }
+    .statement .title { margin-top: 4mm; text-align: center; font-size: 19pt; font-weight: 700; }
+    .statement .info { margin-top: 4mm; border: 1px solid #222; padding: 3mm; }
+    .statement .info .row { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
     .statement .k { font-weight: 700; }
-    .statement .section { margin-top: 6mm; }
-    .statement .section-title { font-size: 18pt; font-weight: 700; margin-bottom: 2mm; }
-    .statement .tbl { width: 100%; border-collapse: collapse; font-size: 14pt; }
-    .statement .tbl th, .statement .tbl td { border: 1px solid #222; padding: 2.2mm 2.4mm; vertical-align: top; }
+    .statement .section { margin-top: 4mm; }
+    .statement .section-title { font-size: 16pt; font-weight: 700; margin-bottom: 1.5mm; }
+    .statement .tbl { width: 100%; border-collapse: collapse; font-size: 12pt; }
+    .statement .tbl th, .statement .tbl td { border: 1px solid #222; padding: 1.6mm 2mm; vertical-align: top; }
     .statement .tbl th { background: #f5f5f5; font-weight: 700; }
     .statement .tbl .no { width: 14mm; text-align: center; }
-    .statement .tbl .date { width: 40mm; }
+    .statement .tbl .date { width: 30mm; text-align: center; }
+    .statement .tbl .year-row td { background: #eaeaea; font-weight: 700; }
+    .statement .tbl .group-row td { background: #f7f7f7; font-weight: 700; text-align: center; }
     .statement .subj-title { font-weight: 700; }
-    .statement .subj-desc { margin-top: 1mm; font-size: 12pt; color: #444; }
-    .statement .footer { margin-top: 10mm; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10mm; }
-    .statement .sig { text-align: center; font-size: 14pt; }
-    .statement .sig .signbox { position: relative; height: 22mm; }
+    .statement .subj-desc { margin-top: 0.8mm; font-size: 11pt; color: #444; }
+    .statement .footer { margin-top: 6mm; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+    .statement .sig { text-align: center; font-size: 12pt; }
+    .statement .sig .signbox { position: relative; height: 18mm; }
     .statement .sig .line { position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-top: 1px solid #222; }
-    .statement .sig .name { margin-top: 1.5mm; }
-    .statement .sig .pos { margin-top: 0.5mm; }
-    .statement .sign { position: absolute; left: 50%; transform: translateX(-50%); bottom: 2mm; height: 18mm; width: auto; object-fit: contain; }
-    .statement .note { margin-top: 6mm; font-size: 12pt; color: #333; }
+    .statement .sig .name { margin-top: 1mm; }
+    .statement .sig .pos { margin-top: 0.4mm; }
+    .statement .sign { position: absolute; left: 50%; transform: translateX(-50%); bottom: 1.8mm; height: 14mm; width: auto; object-fit: contain; }
+    .statement .note { margin-top: 4mm; font-size: 11pt; color: #333; }
     .statement .empty { padding: 14mm; text-align: center; font-size: 16pt; color: #333; border: 1px dashed #999; margin-top: 10mm; }
   </style>
   <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 class="text-xl font-semibold tracking-tight">🖨️ ใบ Statement (A4)</h1>
+        <h1 class="text-xl font-semibold tracking-tight">🖨️ ใบ Transcript (A4)</h1>
         <p class="mt-1 text-sm text-ink-800/70">Preview ได้ในหน้านี้ • กดพิมพ์จะเปิดหน้าใหม่สำหรับสั่ง Print</p>
       </div>
 
@@ -96,10 +101,14 @@ $printHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . '
 
           <div>
             <label class="text-xs font-medium">Logo โรงเรียน (PNG/JPG/WEBP, ≤ 2MB)</label>
-            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm" />
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+              <input id="rsLogoInput" type="file" name="logo" accept="image/png,image/jpeg,image/webp" class="sr-only" />
+              <label for="rsLogoInput" class="inline-flex cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5">📤 อัปโหลดโลโก้</label>
+              <span id="rsLogoName" class="text-xs text-ink-800/60">ยังไม่ได้เลือกไฟล์</span>
+            </div>
             <?php if (!empty($settings['logo_path'])): ?>
               <div class="mt-2 flex items-center gap-3 text-xs text-ink-800/60">
-                <img class="h-10 w-10 rounded-xl border border-black/10 bg-white object-contain" src="/tracks/<?= e(ltrim((string)$settings['logo_path'], '/')) ?>" alt="logo" />
+                <img class="h-10 w-10 rounded-xl border border-black/10 bg-white object-contain" src="/tracks/<?= e(ltrim((string)$settings['logo_path'], '/')) ?>?v=<?= e(rawurlencode((string)($settings['updated_at'] ?? ''))) ?>" alt="logo" />
                 <span>โลโก้ปัจจุบัน: <?= e((string)$settings['logo_path']) ?></span>
               </div>
             <?php endif; ?>
@@ -145,6 +154,14 @@ $printHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . '
                 ?>
                 <option value="<?= $id ?>" <?= ($id === (int)$yearId) ? 'selected' : '' ?>><?= e($label . $active) ?></option>
               <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-medium">เทอม</label>
+            <select name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+              <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+              <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
             </select>
           </div>
 
@@ -252,7 +269,7 @@ $printHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . '
     <div id="preview" class="mt-6">
       <div class="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <div class="text-sm font-semibold">👀 Preview ใบ Statement</div>
+          <div class="text-sm font-semibold">👀 Preview ใบ Transcript</div>
           <div class="mt-0.5 text-xs text-ink-800/60">ถ้าต้องการพิมพ์จริง แนะนำกดปุ่ม “พิมพ์” ด้านบน (จะเปิดหน้าใหม่)</div>
         </div>
         <?php if ($selectedCode !== ''): ?>
@@ -274,6 +291,15 @@ $printHref = $selectedCode !== '' ? ($baseHref . ($query !== '' ? '&' : '?') . '
 
 <script>
   (function () {
+    const logoInput = document.getElementById('rsLogoInput');
+    const logoName = document.getElementById('rsLogoName');
+    if (logoInput && logoName) {
+      logoInput.addEventListener('change', () => {
+        const f = logoInput.files && logoInput.files[0] ? logoInput.files[0] : null;
+        logoName.textContent = f ? f.name : 'ยังไม่ได้เลือกไฟล์';
+      });
+    }
+
     const selectAllBtn = document.getElementById('rsSelectAll');
     const clearAllBtn = document.getElementById('rsClearAll');
     const checks = Array.from(document.querySelectorAll('.rs-student-check'));

@@ -43,12 +43,12 @@ function report_settings_table_ensure(): void
     $pdo->exec("INSERT IGNORE INTO report_settings (id, school_name, logo_path) VALUES (1, '', '')");
 }
 
-/** @return array{school_name:string, logo_path:string, issued_date:string, advisor_name:string, registrar_name:string, director_name:string, advisor_sign_path:string, registrar_sign_path:string, director_sign_path:string} */
+/** @return array{school_name:string, logo_path:string, issued_date:string, advisor_name:string, registrar_name:string, director_name:string, advisor_sign_path:string, registrar_sign_path:string, director_sign_path:string, updated_at:string} */
 function report_settings_get(): array
 {
     report_settings_table_ensure();
     $pdo = db_app();
-    $row = $pdo->query('SELECT school_name, logo_path, issued_date, advisor_name, registrar_name, director_name, advisor_sign_path, registrar_sign_path, director_sign_path FROM report_settings WHERE id = 1')->fetch();
+    $row = $pdo->query('SELECT school_name, logo_path, issued_date, advisor_name, registrar_name, director_name, advisor_sign_path, registrar_sign_path, director_sign_path, updated_at FROM report_settings WHERE id = 1')->fetch();
     return [
         'school_name' => is_array($row) && isset($row['school_name']) ? (string)$row['school_name'] : '',
         'logo_path' => is_array($row) && isset($row['logo_path']) ? (string)$row['logo_path'] : '',
@@ -59,6 +59,7 @@ function report_settings_get(): array
         'advisor_sign_path' => is_array($row) && isset($row['advisor_sign_path']) ? (string)$row['advisor_sign_path'] : '',
         'registrar_sign_path' => is_array($row) && isset($row['registrar_sign_path']) ? (string)$row['registrar_sign_path'] : '',
         'director_sign_path' => is_array($row) && isset($row['director_sign_path']) ? (string)$row['director_sign_path'] : '',
+        'updated_at' => is_array($row) && isset($row['updated_at']) ? (string)$row['updated_at'] : '',
     ];
 }
 

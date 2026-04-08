@@ -2,6 +2,8 @@
 $csrf = csrf_token();
 $years = $years ?? [];
 $activeYear = $activeYear ?? null;
+$activeTerm = (int)($activeTerm ?? 1);
+$activeTerm = ($activeTerm === 2) ? 2 : 1;
 
 $activeLabel = '';
 if (is_array($activeYear)) {
@@ -55,6 +57,29 @@ if (is_array($activeYear)) {
 
         <button class="rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 ตั้งเป็นปีปัจจุบัน</button>
       </form>
+
+      <div class="mt-6 border-t border-black/10 pt-4">
+        <div class="text-sm font-semibold">🎯 เทอมปัจจุบัน (ระบบ Track)</div>
+        <div class="mt-2 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold">
+          เทอม <?= (int)$activeTerm ?>
+        </div>
+
+        <form class="mt-4 grid gap-3" method="post">
+          <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
+          <input type="hidden" name="action" value="set_active_term" />
+
+          <div>
+            <label class="text-xs font-medium">เลือกเทอมที่ต้องการให้ active (Track)</label>
+            <select name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+              <option value="1" <?= $activeTerm === 1 ? 'selected' : '' ?>>เทอม 1</option>
+              <option value="2" <?= $activeTerm === 2 ? 'selected' : '' ?>>เทอม 2</option>
+            </select>
+            <div class="mt-1 text-[11px] text-ink-800/60">ค่าเทอมนี้จะถูกใช้เป็นค่าเริ่มต้นของหน้าต่าง ๆ ในระบบ Track (ถ้าไม่ได้ส่ง term มากับ URL)</div>
+          </div>
+
+          <button class="rounded-2xl bg-ink-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-ink-800">💾 ตั้งเป็นเทอมปัจจุบัน</button>
+        </form>
+      </div>
     </div>
 
     <div class="overflow-hidden rounded-3xl border border-black/5 bg-white/80">

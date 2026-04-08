@@ -115,3 +115,36 @@ function track_class_advisor_for_teacher(int $yearId, int $teacherUserId): ?arra
         'teacher_user_id' => (int)$row['teacher_user_id'],
     ];
 }
+
+function track_class_advisor_name(int $yearId, string $classLevel, int $classRoom): string
+{
+    track_class_advisors_table_ensure();
+
+    $yearId = (int)$yearId;
+    $classLevel = track_class_level_normalize($classLevel);
+    $classRoom = (int)$classRoom;
+
+    if ($yearId <= 0 || $classLevel === '' || $classRoom <= 0) {
+        return '';
+    }
+
+    $pdo = db_app();
+    $stmt = $pdo->prepare(
+        'SELECT u.displayname, u.username '
+        . 'FROM track_class_advisors a '
+        . 'LEFT JOIN users u ON u.id = a.teacher_user_id '
+        . 'WHERE a.year_id = ? AND a.class_level = ? AND a.class_room = ? '
+        . 'LIMIT 1'
+    );
+    $stmt->execute([$yearId, $classLevel, $classRoom]);
+    $row = $stmt->fetch();
+    if (!is_array($row)) {
+        return '';
+    }
+
+    $name = trim((string)($row['displayname'] ?? ''));
+    if ($name !== '') {
+        return $name;
+    }
+    return trim((string)($row['username'] ?? ''));
+}

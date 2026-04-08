@@ -45,6 +45,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    if ($action === 'set_active_term') {
+        $termRaw = input_string('term');
+        $termRaw = trim($termRaw);
+        if (!in_array($termRaw, ['1', '2'], true)) {
+            $error = 'กรุณาเลือกเทอมที่ถูกต้อง';
+        } else {
+            try {
+                track_settings_set_active_term((int)$termRaw);
+                flash_set('success', 'ตั้งค่า “เทอมปัจจุบัน (Track)” เรียบร้อยแล้ว');
+                redirect('academic_year');
+            } catch (Throwable $e) {
+                $error = APP_DEBUG ? ('บันทึกไม่สำเร็จ: ' . $e->getMessage()) : 'บันทึกไม่สำเร็จ';
+            }
+        }
+    }
 }
 
 $years = $pdo->query('SELECT id, year_be, title, is_active FROM academic_years ORDER BY year_be DESC')->fetchAll();
@@ -61,11 +77,13 @@ if (!$activeYear && isset($years[0])) {
 }
 
 $success = flash_get('success');
+$activeTerm = track_active_term();
 
 echo render('academic_year/index', [
     'title' => 'ตั้งค่าปีการศึกษา',
     'years' => $years,
     'activeYear' => $activeYear,
+    'activeTerm' => $activeTerm,
     'success' => $success,
     'error' => $error,
 ]);

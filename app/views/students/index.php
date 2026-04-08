@@ -1,6 +1,8 @@
 <?php
 $csrf = csrf_token(); // not used currently but kept for future actions
 $filters = $filters ?? [];
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 ?>
 <div class="grid gap-6">
   <section class="rounded-3xl border border-black/5 bg-white/80 p-6 shadow-sm backdrop-blur">
@@ -25,6 +27,14 @@ $filters = $filters ?? [];
             ?>
             <option value="<?= $id ?>" <?= ($id === (int)($yearId ?? 0)) ? 'selected' : '' ?>><?= e($label . $active) ?></option>
           <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs font-medium">เทอม</label>
+        <select name="term" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+          <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+          <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
         </select>
       </div>
 

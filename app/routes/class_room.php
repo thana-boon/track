@@ -39,6 +39,8 @@ if (!$yearIdValid) {
     $yearId = $defaultYearId;
 }
 
+$term = term_from_request(track_active_term());
+
 $teacherAssignment = null;
 if ($role === 'teacher') {
     $teacherId = (int)($me['id'] ?? 0);
@@ -148,11 +150,11 @@ if ($yearId > 0 && $selectedLevel !== '' && $selectedRoom > 0) {
         . 'FROM track_class_sessions sess '
         . 'JOIN track_class_students cs ON cs.session_id = sess.id '
         . 'JOIN ' . DB_SCHOOL . '.students st ON st.year_id = sess.year_id AND st.student_code = cs.student_code '
-        . 'WHERE sess.year_id = ? AND sess.session_date BETWEEN ? AND ? '
+        . 'WHERE sess.year_id = ? AND sess.term = ? AND sess.session_date BETWEEN ? AND ? '
         . 'AND st.class_room = ? AND st.class_level IN (' . implode(',', array_fill(0, count($levelVariants), '?')) . ') '
         . 'ORDER BY sess.session_date';
     $stmtDates = $pdoApp->prepare($sqlDates);
-    $stmtDates->execute(array_merge([$yearId, $start->format('Y-m-d'), $end->format('Y-m-d'), $selectedRoom], $levelVariants));
+    $stmtDates->execute(array_merge([$yearId, $term, $start->format('Y-m-d'), $end->format('Y-m-d'), $selectedRoom], $levelVariants));
     foreach ($stmtDates->fetchAll() as $row) {
         $d = (string)($row['session_date'] ?? '');
         if ($d !== '') $dates[] = $d;
@@ -170,12 +172,12 @@ if ($yearId > 0 && $selectedLevel !== '' && $selectedRoom > 0) {
         . 'FROM track_class_sessions sess '
         . 'JOIN track_class_students cs ON cs.session_id = sess.id '
         . 'JOIN ' . DB_SCHOOL . '.students st ON st.year_id = sess.year_id AND st.student_code = cs.student_code '
-        . 'WHERE sess.year_id = ? AND sess.session_date BETWEEN ? AND ? '
+        . 'WHERE sess.year_id = ? AND sess.term = ? AND sess.session_date BETWEEN ? AND ? '
         . 'AND st.class_room = ? AND st.class_level IN (' . implode(',', array_fill(0, count($levelVariants), '?')) . ') '
         . 'GROUP BY cs.student_code, sess.session_date';
 
     $stmtAgg = $pdoApp->prepare($sqlAgg);
-    $stmtAgg->execute(array_merge([$yearId, $start->format('Y-m-d'), $end->format('Y-m-d'), $selectedRoom], $levelVariants));
+    $stmtAgg->execute(array_merge([$yearId, $term, $start->format('Y-m-d'), $end->format('Y-m-d'), $selectedRoom], $levelVariants));
 
     foreach ($stmtAgg->fetchAll() as $row) {
         $code = (string)($row['student_code'] ?? '');
@@ -212,6 +214,7 @@ echo render('class_room/index', [
     'role' => $role,
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'rooms' => $rooms,
     'selectedLevel' => $selectedLevel,
     'selectedRoom' => $selectedRoom,

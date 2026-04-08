@@ -2,8 +2,11 @@
 $student = $student ?? null;
 $subjects = $subjects ?? [];
 $summary = $summary ?? ['assigned_total' => 0, 'passed_total' => 0, 'passed_titles' => [], 'missing_titles' => []];
+$years = is_array($years ?? null) ? $years : [];
 
 $yearId = (int)($yearId ?? 0);
+$term = (int)($term ?? 1);
+$term = ($term === 2) ? 2 : 1;
 $yearText = (string)($yearText ?? ((string)$yearId));
 $studentCode = (string)($studentCode ?? '');
 
@@ -20,10 +23,31 @@ $noText = $student ? (string)$student['number_in_room'] : '';
         <p class="mt-1 text-sm text-ink-800/70">แสดงเฉพาะข้อมูลของบัญชีที่ล็อกอิน (username = รหัสนักเรียน)</p>
       </div>
 
-      <div class="rounded-2xl border border-black/5 bg-sand-100/70 px-4 py-3 text-sm">
-        <div class="text-xs text-ink-800/60">ปีการศึกษา</div>
-        <div class="font-semibold"><?= e($yearText) ?></div>
-      </div>
+      <form class="rounded-2xl border border-black/5 bg-sand-100/70 px-4 py-3 text-sm" method="get" action="/tracks/student_results">
+        <div class="grid gap-2">
+          <div>
+            <div class="text-xs font-medium text-ink-800/70">ปีการศึกษา</div>
+            <select name="year_id" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="this.form.submit()">
+              <?php foreach ($years as $y): ?>
+                <?php
+                  $id = (int)($y['id'] ?? 0);
+                  $label = (string)($y['title'] ?? '') . ' (' . (string)($y['year_be'] ?? '') . ')';
+                  $active = ((int)($y['is_active'] ?? 0) === 1) ? ' • active' : '';
+                ?>
+                <option value="<?= $id ?>" <?= $id === $yearId ? 'selected' : '' ?>><?= e($label . $active) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div>
+            <div class="text-xs font-medium text-ink-800/70">เทอม</div>
+            <select name="term" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="this.form.submit()">
+              <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
+              <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
+            </select>
+          </div>
+        </div>
+      </form>
     </div>
 
     <?php if (!empty($error)): ?>

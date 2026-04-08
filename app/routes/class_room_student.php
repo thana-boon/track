@@ -22,10 +22,13 @@ if ($yearId <= 0) {
     $yearId = $activeYearId;
 }
 
+$term = term_from_request(track_active_term());
+
 $studentCode = (string)query_string('student_code');
 
 $return = [
     'year_id' => (int)query_string('return_year_id'),
+    'term' => (int)query_string('return_term'),
     'class_level' => (string)query_string('return_class_level'),
     'class_room' => (int)query_string('return_class_room'),
     'ym' => (string)query_string('return_ym'),
@@ -77,11 +80,11 @@ $stmt = $pdoApp->prepare(
     . 'FROM track_class_students cs '
     . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
     . 'JOIN track_subjects subj ON subj.id = sess.subject_id '
-    . 'WHERE sess.year_id = ? AND cs.student_code = ? '
+    . 'WHERE sess.year_id = ? AND sess.term = ? AND cs.student_code = ? '
     . 'GROUP BY subj.id, subj.title '
     . 'ORDER BY subj.title'
 );
-$stmt->execute([$yearId, $studentCode]);
+$stmt->execute([$yearId, $term, $studentCode]);
 $rows = $stmt->fetchAll();
 
 $passed = [];
@@ -99,6 +102,7 @@ echo render('class_room/student', [
     'title' => 'ผลการเรียน (ผ่าน/ไม่ผ่าน)',
     'student' => $student,
     'yearId' => $yearId,
+    'term' => $term,
     'passed' => $passed,
     'failed' => $failed,
     'pending' => $pending,

@@ -86,12 +86,22 @@ switch ($route) {
     case 'track-subjects':
         require __DIR__ . '/app/routes/track_subjects.php';
         break;
+    case 'track_groups':
+    case 'track-groups':
+        require __DIR__ . '/app/routes/track_groups.php';
+        break;
     case 'register_track':
     case 'register-track':
         require __DIR__ . '/app/routes/register_track.php';
         break;
     case 'student_track':
-        require __DIR__ . '/app/routes/student_track.php';
+        $qs = $_SERVER['QUERY_STRING'] ?? '';
+        header('Location: /tracks/student_manage' . ($qs !== '' ? ('?' . $qs) : ''));
+        exit;
+        break;
+    case 'student_manage':
+    case 'student-manage':
+        require __DIR__ . '/app/routes/student_manage.php';
         break;
     case 'report_statement':
         require __DIR__ . '/app/routes/report_statement.php';

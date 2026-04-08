@@ -25,6 +25,9 @@ if (!$session) {
     exit;
 }
 
+$term = (int)($session['term'] ?? term_from_request(track_active_term()));
+$term = ($term === 2) ? 2 : 1;
+
 $yearId = (int)($session['year_id'] ?? 0);
 $subjects = track_subjects_all();
 
@@ -95,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $backQs = http_build_query(array_filter([
                 'year_id' => $returnYear > 0 ? $returnYear : $yearId,
+                'term' => $term,
                 'session_date' => $returnDate !== '' ? $returnDate : $sessionDatePost,
             ], static fn($v) => $v !== '' && $v !== 0));
 
@@ -121,6 +125,7 @@ echo render('class_attendance/edit', [
     'roster' => $roster,
     'existingCodes' => $existingCodes,
     'studentCodesText' => $formStudentCodesText,
+    'term' => $term,
     'returnDate' => $returnDate,
     'returnYear' => $returnYear,
     'error' => $error,

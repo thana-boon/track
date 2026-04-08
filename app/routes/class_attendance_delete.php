@@ -28,6 +28,9 @@ try {
         throw new RuntimeException('ไม่พบรอบเรียน');
     }
 
+    $term = (int)($session['term'] ?? term_from_request(track_active_term()));
+    $term = ($term === 2) ? 2 : 1;
+
     track_class_session_delete($sessionId);
     flash_set('success', 'ลบรอบเรียนแล้ว ✅');
 
@@ -36,6 +39,7 @@ try {
 
     $qs = http_build_query(array_filter([
         'year_id' => $returnYear > 0 ? $returnYear : $yearId,
+        'term' => $term,
         'session_date' => $returnDate !== '' ? $returnDate : $sessionDate,
     ], static fn($v) => $v !== '' && $v !== 0));
 

@@ -29,6 +29,8 @@ if (!$yearValid) {
     $yearId = $defaultYearId;
 }
 
+$term = term_from_request(track_active_term());
+
 $sessionDate = query_string('session_date');
 if ($sessionDate !== '') {
     $sessionDate = trim($sessionDate);
@@ -57,15 +59,16 @@ $success = flash_get('success');
 $csrf = csrf_token();
 
 $defaultDate = $sessionDate !== '' ? $sessionDate : date('Y-m-d');
-$sessionsForDate = track_class_sessions_for_date($yearId, $defaultDate);
+$sessionsForDate = track_class_sessions_for_date($yearId, $term, $defaultDate);
 $ym = substr($defaultDate, 0, 7);
-$sessionDatesInMonth = track_class_session_dates_in_month($yearId, $ym);
+$sessionDatesInMonth = track_class_session_dates_in_month($yearId, $term, $ym);
 
 echo render('class_attendance/index', [
     'title' => 'ตารางเรียน (ตามวัน)',
     'csrf' => $csrf,
     'years' => $years,
     'yearId' => $yearId,
+    'term' => $term,
     'sessionDate' => $defaultDate,
     'sessionsForDate' => $sessionsForDate,
     'sessionDatesInMonth' => $sessionDatesInMonth,
