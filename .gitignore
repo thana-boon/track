@@ -1,0 +1,23 @@
+# Environment & secrets
+.env
+
+# Uploaded files & user content
+uploads/backups/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP composer (if added later)
+/vendor/
+composer.lock
+
+# Logs
+*.log

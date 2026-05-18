@@ -105,7 +105,7 @@ $issuedDate = thai_date_long($issuedDateRaw);
     </div>
 
     <div class="section">
-      <div class="section-title">รายการวิชา (ผ่าน/รอผล)</div>
+      <div class="section-title">รายการวิชา (ผ่าน/ยอดเยี่ยม)</div>
 
       <?php if (empty($transcriptRows)): ?>
         <div class="empty">ไม่พบข้อมูลวิชา</div>
@@ -183,7 +183,15 @@ $issuedDate = thai_date_long($issuedDateRaw);
                   ?>
                   <?php
                     $status = (string)($r['status'] ?? 'pass');
-                    $statusLabel = $status === 'pass' ? 'ผ่าน' : 'รอผล';
+                    if ($status === 'excellent') {
+                      $statusLabel = 'ยอดเยี่ยม';
+                    } elseif ($status === 'pass') {
+                      $statusLabel = 'ผ่าน';
+                    } else {
+                      $statusLabel = 'รอผล';
+                    }
+                    // Skip subjects marked as fail (should not appear in transcript)
+                    if ($status === 'fail') continue;
                   ?>
                   <tr>
                     <td class="no"><?= (int)$n ?></td>

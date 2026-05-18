@@ -89,7 +89,7 @@ function track_reg_assign_bulk_for_term(int $yearId, int $term, int $subjectId, 
     $term = ($term === 2) ? 2 : 1;
 
     $resultStatus = trim($resultStatus);
-    if (!in_array($resultStatus, ['registered', 'pass'], true)) {
+    if (!in_array($resultStatus, ['registered', 'pass', 'excellent'], true)) {
         $resultStatus = 'registered';
     }
 

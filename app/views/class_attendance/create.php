@@ -88,9 +88,16 @@ $baseQuery = http_build_query(array_filter([
 
       <div class="grid gap-3 md:grid-cols-2">
         <div>
-          <label class="text-xs font-medium">วันที่เรียน</label>
-          <input type="date" name="session_date" value="<?= e((string)($sessionDate ?? '')) ?>" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
-          <div class="mt-1 text-[11px] text-ink-800/60">เว้นว่างได้ (จะเป็นวันนี้อัตโนมัติ)</div>
+          <label class="text-xs font-medium">วันที่เรียน <span class="text-ink-800/50">(เพิ่มได้หลายวัน)</span></label>
+          <div id="sessionDatesContainer" class="mt-1 grid gap-2">
+            <div class="date-row flex items-center gap-2">
+              <input type="text" class="thai-dp-text flex-1 rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เลือกวันที่..." data-hidden-id="dp_1" />
+              <input type="hidden" id="dp_1" name="session_dates[]" value="" />
+              <button type="button" class="remove-date rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-red-600 hover:bg-red-50 hidden">✕</button>
+            </div>
+          </div>
+          <button type="button" id="addDateBtn" class="mt-2 rounded-2xl border border-dashed border-calm-400 bg-calm-50 px-3 py-2 text-xs text-calm-700 hover:bg-calm-100">+ เพิ่มวันที่เรียน</button>
+          <div class="mt-1 text-[11px] text-ink-800/60">ถ้าวิชานี้เรียนหลายวัน เช่น วันที่ 10 กับ 17 ให้กด "+ เพิ่มวันที่" แล้วใส่ให้ครบ</div>
         </div>
 
         <div>
@@ -98,6 +105,177 @@ $baseQuery = http_build_query(array_filter([
           <input name="note" value="<?= e((string)($note ?? '')) ?>" placeholder="เช่น กลุ่มเช้า / กลุ่มบ่าย" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
         </div>
       </div>
+
+      <script>
+      (function () {
+        /* ─── Thai Date Picker ─── */
+        var MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                         'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+        var DAYS_TH = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+        var dpCounter = 1;
+        var activePopup = null;
+
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+        function fmtThai(d) { return d.getDate() + ' ' + MONTHS_TH[d.getMonth()] + ' ' + (d.getFullYear() + 543); }
+        function toIso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+        function fromIso(s) {
+          if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+          var p = s.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+          return isNaN(d.getTime()) ? null : d;
+        }
+        function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+        function buildCalendar(popup, state, hiddenEl, textEl) {
+          var y = state.viewYear, m = state.viewMonth;
+          var firstDay = new Date(y, m, 1).getDay();
+          var days = daysInMonth(y, m);
+          var selIso = hiddenEl.value;
+          var todayIso = toIso(new Date());
+
+          popup.innerHTML = '';
+
+          /* header */
+          var hdr = document.createElement('div');
+          hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
+
+          function navBtn(txt, cb) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.textContent = txt;
+            b.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px 10px;border-radius:8px;font-size:13px;color:#273156;line-height:1;';
+            b.onmouseover = function () { this.style.background = '#f6f3eb'; };
+            b.onmouseout  = function () { this.style.background = 'none'; };
+            b.addEventListener('click', function (e) { e.stopPropagation(); cb(); buildCalendar(popup, state, hiddenEl, textEl); });
+            return b;
+          }
+
+          hdr.appendChild(navBtn('◀', function () { state.viewMonth--; if (state.viewMonth < 0) { state.viewMonth = 11; state.viewYear--; } }));
+          var lbl = document.createElement('span');
+          lbl.style.cssText = 'font-weight:700;font-size:13px;color:#11172a;';
+          lbl.textContent = MONTHS_TH[m] + ' ' + (y + 543);
+          hdr.appendChild(lbl);
+          hdr.appendChild(navBtn('▶', function () { state.viewMonth++; if (state.viewMonth > 11) { state.viewMonth = 0; state.viewYear++; } }));
+          popup.appendChild(hdr);
+
+          /* grid */
+          var grid = document.createElement('div');
+          grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:2px;';
+
+          DAYS_TH.forEach(function (d) {
+            var c = document.createElement('div');
+            c.style.cssText = 'text-align:center;padding:4px 0;font-size:11px;font-weight:600;color:#273156;opacity:0.5;';
+            c.textContent = d; grid.appendChild(c);
+          });
+
+          for (var i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+          for (var dd = 1; dd <= days; dd++) {
+            (function (day) {
+              var iso = y + '-' + pad(m + 1) + '-' + pad(day);
+              var btn = document.createElement('button');
+              btn.type = 'button'; btn.textContent = day;
+              var base = 'text-align:center;padding:5px 2px;border:none;border-radius:8px;cursor:pointer;width:100%;font-size:13px;font-family:inherit;';
+              if (iso === selIso)    btn.style.cssText = base + 'background:#2b7f79;color:white;font-weight:700;';
+              else if (iso === todayIso) btn.style.cssText = base + 'background:#e6f3f2;color:#2b7f79;font-weight:700;';
+              else {
+                btn.style.cssText = base + 'background:none;color:#1b2542;';
+                btn.onmouseover = function () { this.style.background = '#f6f3eb'; };
+                btn.onmouseout  = function () { this.style.background = 'none'; };
+              }
+              btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                hiddenEl.value = iso;
+                textEl.value = fmtThai(new Date(y, m, day));
+                closePopup();
+              });
+              grid.appendChild(btn);
+            })(dd);
+          }
+          popup.appendChild(grid);
+        }
+
+        function onDocClick(e) { if (activePopup && !activePopup.contains(e.target)) closePopup(); }
+
+        function closePopup() {
+          if (activePopup) { activePopup.remove(); activePopup = null; }
+          document.removeEventListener('click', onDocClick);
+        }
+
+        function openPicker(textEl, hiddenEl) {
+          closePopup();
+          var ref = fromIso(hiddenEl.value) || new Date();
+          var state = { viewYear: ref.getFullYear(), viewMonth: ref.getMonth() };
+          var popup = document.createElement('div');
+          popup.style.cssText = 'position:absolute;z-index:9999;background:white;border:1px solid rgba(0,0,0,0.1);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.15);padding:12px;min-width:270px;';
+          buildCalendar(popup, state, hiddenEl, textEl);
+          document.body.appendChild(popup);
+          var rect = textEl.getBoundingClientRect();
+          popup.style.top  = (rect.bottom + (window.scrollY || window.pageYOffset) + 4) + 'px';
+          popup.style.left = (rect.left  + (window.scrollX || window.pageXOffset)) + 'px';
+          activePopup = popup;
+          setTimeout(function () { document.addEventListener('click', onDocClick); }, 0);
+        }
+
+        function initPicker(textEl, hiddenEl) {
+          if (textEl.dataset.dpInit) return;
+          textEl.dataset.dpInit = '1';
+          textEl.readOnly = true;
+          textEl.style.cursor = 'pointer';
+          if (hiddenEl.value) { var d = fromIso(hiddenEl.value); if (d) textEl.value = fmtThai(d); }
+          textEl.addEventListener('click', function (e) { e.stopPropagation(); openPicker(textEl, hiddenEl); });
+        }
+
+        function initAll() {
+          document.querySelectorAll('.thai-dp-text').forEach(function (el) {
+            if (el.dataset.dpInit) return;
+            var hid = document.getElementById(el.dataset.hiddenId || '');
+            if (hid) initPicker(el, hid);
+          });
+        }
+
+        /* ─── Date row manager ─── */
+        var container = document.getElementById('sessionDatesContainer');
+        var addBtn    = document.getElementById('addDateBtn');
+
+        function makeRow() {
+          dpCounter++;
+          var id = 'dp_' + dpCounter;
+          var row = document.createElement('div');
+          row.className = 'date-row flex items-center gap-2';
+          row.innerHTML =
+            '<input type="text" class="thai-dp-text flex-1 rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เลือกวันที่..." data-hidden-id="' + id + '" />'
+            + '<input type="hidden" id="' + id + '" name="session_dates[]" value="" />'
+            + '<button type="button" class="remove-date rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-red-600 hover:bg-red-50">✕</button>';
+          return row;
+        }
+
+        function refreshRemove() {
+          var rows = container.querySelectorAll('.date-row');
+          rows.forEach(function (r) {
+            var b = r.querySelector('.remove-date');
+            if (b) b.classList.toggle('hidden', rows.length <= 1);
+          });
+        }
+
+        if (addBtn) {
+          addBtn.addEventListener('click', function () {
+            var row = makeRow();
+            container.appendChild(row);
+            initAll();
+            refreshRemove();
+          });
+        }
+
+        container.addEventListener('click', function (e) {
+          var btn = e.target.closest('.remove-date');
+          if (!btn) return;
+          btn.closest('.date-row').remove();
+          refreshRemove();
+        });
+
+        initAll();
+        refreshRemove();
+      })();
+      </script>
 
       <div class="grid gap-3 lg:grid-cols-3">
         <div class="lg:col-span-2 rounded-3xl border border-black/5 bg-white/70 p-3">

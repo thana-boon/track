@@ -77,12 +77,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         if ($action === 'create_session') {
-            $sessionDate = input_string('session_date');
+            $sessionDatesRaw = $_POST['session_dates'] ?? [];
+            if (!is_array($sessionDatesRaw)) {
+                $sessionDatesRaw = [];
+            }
+
+            // Validate and deduplicate dates
+            $sessionDates = [];
+            foreach ($sessionDatesRaw as $d) {
+                $d = trim((string)$d);
+                if ($d !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)) {
+                    $sessionDates[] = $d;
+                }
+            }
+            $sessionDates = array_values(array_unique($sessionDates));
+
+            if (count($sessionDates) === 0) {
+                throw new RuntimeException('กรุณาเลือกวันที่เรียนอย่างน้อย 1 วัน');
+            }
+
             $note = input_string('note');
             $subjectIdPost = (int)input_string('subject_id');
             $yearIdPost = (int)input_string('year_id');
 
-            $formSessionDate = $sessionDate;
             $formNote = $note;
 
             $codes = $_POST['student_codes'] ?? [];
@@ -120,9 +137,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $codes = array_keys($uniq);
 
-            $sessionId = track_class_session_create($yearIdPost, $term, $subjectIdPost, $sessionDate, $note, $codes);
-            flash_set('success', 'สร้างรอบเรียนแล้ว ✅');
-            header('Location: /tracks/class_attendance_view?id=' . $sessionId);
+            // Create one session per date
+            $firstSessionId = 0;
+            foreach ($sessionDates as $date) {
+                $sid = track_class_session_create($yearIdPost, $term, $subjectIdPost, $date, $note, $codes);
+                if ($firstSessionId === 0) {
+                    $firstSessionId = $sid;
+                }
+            }
+
+            $daysCount = count($sessionDates);
+            flash_set('success', 'สร้างรอบเรียนแล้ว ' . $daysCount . ' วัน ✅');
+            $qs = http_build_query(array_filter([
+                'year_id' => $yearIdPost,
+                'term' => $term,
+                'session_date' => $sessionDates[0],
+            ], static fn($v) => $v !== '' && $v !== 0));
+            header('Location: /tracks/class_attendance' . ($qs !== '' ? ('?' . $qs) : ''));
             exit;
         }
 

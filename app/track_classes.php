@@ -43,6 +43,9 @@ function track_class_tables_ensure(): void
         "ALTER TABLE track_class_students ADD COLUMN attend_status TINYINT NULL DEFAULT NULL",
         "ALTER TABLE track_class_students ADD COLUMN result_status VARCHAR(10) NOT NULL DEFAULT 'pending'",
         "ALTER TABLE track_class_students ADD COLUMN checked_at TIMESTAMP NULL DEFAULT NULL",
+        "ALTER TABLE track_class_students ADD COLUMN attend_morning TINYINT NULL DEFAULT NULL",
+        "ALTER TABLE track_class_students ADD COLUMN attend_afternoon TINYINT NULL DEFAULT NULL",
+        "ALTER TABLE track_class_students MODIFY COLUMN result_status VARCHAR(16) NOT NULL DEFAULT 'pending'",
     ];
     foreach ($migrations as $sql) {
         try {
@@ -307,7 +310,7 @@ function track_class_roster(int $sessionId): array
 
     $pdo = db_app();
 
-    $sql = 'SELECT cs.session_id, cs.student_code, cs.attend_status, cs.result_status, cs.checked_at, '
+    $sql = 'SELECT cs.session_id, cs.student_code, cs.attend_status, cs.attend_morning, cs.attend_afternoon, cs.result_status, cs.checked_at, '
         . 'st.first_name, st.last_name, st.class_level, st.class_room, st.number_in_room '
         . 'FROM track_class_students cs '
         . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
@@ -322,11 +325,13 @@ function track_class_roster(int $sessionId): array
 
 /**
  * Save attendance/result for a session.
- * @param array<string, mixed> $attendMap student_code => '1'|'0'|''
- * @param array<string, mixed> $resultMap student_code => 'pending'|'pass'|'fail'
+ * @param array<string, mixed> $attendMap   student_code => '1'|'0'|'' (legacy combined, derived from morning+afternoon if provided)
+ * @param array<string, mixed> $resultMap   student_code => 'pending'|'excellent'|'pass'|'fail'
+ * @param array<string, mixed> $morningMap  student_code => '1'|'0'|''
+ * @param array<string, mixed> $afternoonMap student_code => '1'|'0'|''
  * @return array{updated:int, passed_added:int}
  */
-function track_class_save_check(int $sessionId, array $attendMap, array $resultMap): array
+function track_class_save_check(int $sessionId, array $attendMap, array $resultMap, array $morningMap = [], array $afternoonMap = []): array
 {
     track_class_tables_ensure();
     track_registrations_table_ensure();
@@ -341,7 +346,11 @@ function track_class_save_check(int $sessionId, array $attendMap, array $resultM
     $updated = 0;
     $passedCodes = [];
 
-    $stmtUp = $pdo->prepare('UPDATE track_class_students SET attend_status = ?, result_status = ?, checked_at = NOW() WHERE session_id = ? AND student_code = ?');
+    $stmtUp = $pdo->prepare(
+        'UPDATE track_class_students '
+        . 'SET attend_status = ?, attend_morning = ?, attend_afternoon = ?, result_status = ?, checked_at = NOW() '
+        . 'WHERE session_id = ? AND student_code = ?'
+    );
 
     foreach ($resultMap as $code => $result) {
         $code = trim((string)$code);
@@ -349,32 +358,75 @@ function track_class_save_check(int $sessionId, array $attendMap, array $resultM
             continue;
         }
 
-        $attRaw = $attendMap[$code] ?? '';
-        $att = null;
-        if ($attRaw === '1' || $attRaw === 1 || $attRaw === true) {
-            $att = 1;
+        // Morning attendance
+        $morningRaw = $morningMap[$code] ?? '';
+        $morning = null;
+        if ($morningRaw === '1' || $morningRaw === 1) {
+            $morning = 1;
+        } elseif ($morningRaw === '0' || $morningRaw === 0) {
+            $morning = 0;
         }
-        if ($attRaw === '0' || $attRaw === 0 || $attRaw === false) {
-            $att = 0;
+
+        // Afternoon attendance
+        $afternoonRaw = $afternoonMap[$code] ?? '';
+        $afternoon = null;
+        if ($afternoonRaw === '1' || $afternoonRaw === 1) {
+            $afternoon = 1;
+        } elseif ($afternoonRaw === '0' || $afternoonRaw === 0) {
+            $afternoon = 0;
+        }
+
+        // Derive combined attend_status: present if either session attended.
+        // If morning/afternoon maps provided, derive from them; otherwise fall back to legacy attendMap.
+        if (count($morningMap) > 0 || count($afternoonMap) > 0) {
+            if ($morning === 1 || $afternoon === 1) {
+                $att = 1;
+            } elseif ($morning === 0 || $afternoon === 0) {
+                $att = 0;
+            } else {
+                $att = null;
+            }
+        } else {
+            $attRaw = $attendMap[$code] ?? '';
+            $att = null;
+            if ($attRaw === '1' || $attRaw === 1 || $attRaw === true) {
+                $att = 1;
+            }
+            if ($attRaw === '0' || $attRaw === 0 || $attRaw === false) {
+                $att = 0;
+            }
         }
 
         $res = (string)$result;
-        if (!in_array($res, ['pending', 'pass', 'fail'], true)) {
+        if (!in_array($res, ['pending', 'excellent', 'pass', 'fail'], true)) {
             $res = 'pending';
         }
 
-        $stmtUp->execute([$att, $res, $sessionId, $code]);
+        $stmtUp->execute([$att, $morning, $afternoon, $res, $sessionId, $code]);
         $updated += $stmtUp->rowCount();
 
-        if ($res === 'pass') {
-            $passedCodes[] = $code;
+        if ($res === 'pass' || $res === 'excellent') {
+            $passedCodes[$code] = $res; // store with their result for registration
         }
     }
 
     $passedAdded = 0;
     if (count($passedCodes) > 0) {
-        // Add to student record (registration) when marked as pass.
-        $passedAdded = track_reg_assign_bulk_for_term((int)$session['year_id'], (int)($session['term'] ?? 1), (int)$session['subject_id'], $passedCodes, 'pass');
+        // Add to student record (registration) when marked as pass or excellent.
+        // Group by result_status for bulk insert.
+        $byResult = [];
+        foreach ($passedCodes as $code => $res) {
+            $byResult[$res][] = $code;
+        }
+        foreach ($byResult as $res => $codes) {
+            $passedAdded += track_reg_assign_bulk_for_term(
+                (int)$session['year_id'],
+                (int)($session['term'] ?? 1),
+                (int)$session['subject_id'],
+                $codes,
+                $res
+            );
+        }
     }
 
     return ['updated' => $updated, 'passed_added' => $passedAdded];
@@ -551,21 +603,22 @@ function track_transcript_rows(string $studentCode): array
     $stmtReg->execute([$studentCode]);
     $regRows = $stmtReg->fetchAll();
 
-    // 2) Passed subjects (status=pass)
+    // 2) Passed/excellent subjects (status from class_students)
     $stmtPass = $pdo->prepare(
         'SELECT DISTINCT sess.year_id, sess.term, subj.id AS subject_id, subj.group_id, g.title AS group_title, '
         . 'subj.subject_code, subj.title AS subject_title, subj.description AS subject_description, '
-        . "'pass' AS status "
+        . 'cs.result_status AS status '
         . 'FROM track_class_students cs '
         . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
         . 'JOIN track_subjects subj ON subj.id = sess.subject_id '
         . 'LEFT JOIN track_groups g ON g.id = subj.group_id '
-        . 'WHERE cs.student_code = ? AND cs.result_status = \'pass\''
+        . "WHERE cs.student_code = ? AND cs.result_status IN ('pass', 'excellent')"
     );
     $stmtPass->execute([$studentCode]);
     $passRows = $stmtPass->fetchAll();
 
-    // Merge with preference: pass > registered
+    // Merge with preference: excellent > pass > registered
+    $statusRank = ['excellent' => 3, 'pass' => 2, 'registered' => 1];
     $byKey = [];
     foreach ($regRows as $r) {
         $key = (int)($r['year_id'] ?? 0) . '-' . (int)($r['term'] ?? 1) . '-' . (int)($r['subject_id'] ?? 0);
@@ -575,7 +628,11 @@ function track_transcript_rows(string $studentCode): array
     }
     foreach ($passRows as $r) {
         $key = (int)($r['year_id'] ?? 0) . '-' . (int)($r['term'] ?? 1) . '-' . (int)($r['subject_id'] ?? 0);
-        $byKey[$key] = $r;
+        $curRank = isset($byKey[$key]) ? ($statusRank[(string)($byKey[$key]['status'] ?? '')] ?? 0) : 0;
+        $newRank = $statusRank[(string)($r['status'] ?? '')] ?? 0;
+        if ($newRank > $curRank) {
+            $byKey[$key] = $r;
+        }
     }
 
     $rows = array_values($byKey);

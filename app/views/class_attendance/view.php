@@ -62,7 +62,8 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
       <div class="flex items-center justify-between gap-2 bg-sand-100 px-4 py-3">
         <div class="text-sm font-semibold">👥 รายชื่อนักเรียน</div>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'attend[\']').forEach(function(el){el.value='1';});})();">✅ มาทั้งหมด</button>
+          <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'morning[\']').forEach(function(el){el.value='1';});document.querySelectorAll('select[name^=\'afternoon[\']').forEach(function(el){el.value='1';});})();">✅ มาทั้งหมด (เช้า+บ่าย)</button>
+          <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'result[\']').forEach(function(el){el.value='excellent';});})();">⭐ ยอดเยี่ยมทั้งหมด</button>
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'result[\']').forEach(function(el){el.value='pass';});})();">🟢 ผ่านทั้งหมด</button>
           <button class="rounded-2xl bg-calm-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 บันทึก</button>
         </div>
@@ -73,7 +74,8 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
           <thead class="bg-white text-left text-xs text-ink-800/70">
             <tr>
               <th class="px-4 py-3">นักเรียน</th>
-              <th class="px-4 py-3">เข้าเรียน</th>
+              <th class="px-4 py-3">เช้า</th>
+              <th class="px-4 py-3">บ่าย</th>
               <th class="px-4 py-3">ผล</th>
             </tr>
           </thead>
@@ -86,7 +88,11 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
                 $att = $r['attend_status'];
                 $res = (string)($r['result_status'] ?? 'pending');
                 $attVal = $att === null ? '' : ((int)$att === 1 ? '1' : '0');
-                if (!in_array($res, ['pending', 'pass', 'fail'], true)) $res = 'pending';
+                $morning = $r['attend_morning'] ?? null;
+                $afternoon = $r['attend_afternoon'] ?? null;
+                $morningVal = $morning === null ? '' : ((int)$morning === 1 ? '1' : '0');
+                $afternoonVal = $afternoon === null ? '' : ((int)$afternoon === 1 ? '1' : '0');
+                if (!in_array($res, ['pending', 'excellent', 'pass', 'fail'], true)) $res = 'pending';
               ?>
               <tr class="hover:bg-sand-50">
                 <td class="px-4 py-3">
@@ -99,15 +105,23 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
                   <?php endif; ?>
                 </td>
                 <td class="px-4 py-3">
-                  <select name="attend[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
-                    <option value="" <?= $attVal === '' ? 'selected' : '' ?>>—</option>
-                    <option value="1" <?= $attVal === '1' ? 'selected' : '' ?>>✅ เข้าเรียน</option>
-                    <option value="0" <?= $attVal === '0' ? 'selected' : '' ?>>❌ ไม่เข้าเรียน</option>
+                  <select name="morning[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
+                    <option value="" <?= $morningVal === '' ? 'selected' : '' ?>>—</option>
+                    <option value="1" <?= $morningVal === '1' ? 'selected' : '' ?>>✅ มา</option>
+                    <option value="0" <?= $morningVal === '0' ? 'selected' : '' ?>>❌ ขาด</option>
+                  </select>
+                </td>
+                <td class="px-4 py-3">
+                  <select name="afternoon[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
+                    <option value="" <?= $afternoonVal === '' ? 'selected' : '' ?>>—</option>
+                    <option value="1" <?= $afternoonVal === '1' ? 'selected' : '' ?>>✅ มา</option>
+                    <option value="0" <?= $afternoonVal === '0' ? 'selected' : '' ?>>❌ ขาด</option>
                   </select>
                 </td>
                 <td class="px-4 py-3">
                   <select name="result[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
                     <option value="pending" <?= $res === 'pending' ? 'selected' : '' ?>>⏳ รอดำเนินการ</option>
+                    <option value="excellent" <?= $res === 'excellent' ? 'selected' : '' ?>>⭐ ยอดเยี่ยม</option>
                     <option value="pass" <?= $res === 'pass' ? 'selected' : '' ?>>🟢 ผ่าน</option>
                     <option value="fail" <?= $res === 'fail' ? 'selected' : '' ?>>🔴 ไม่ผ่าน</option>
                   </select>
@@ -151,12 +165,14 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
           var needConfirm = 0;
 
           passSelects.forEach(function (resEl) {
-            if (!resEl || resEl.value !== 'pass') return;
+            if (!resEl || (resEl.value !== 'pass' && resEl.value !== 'excellent')) return;
             var code = extractCode(resEl.name);
             if (!code) return;
-            var attendEl = form.querySelector("select[name='attend[" + cssEscape(code) + "]']");
-            var attendVal = attendEl ? attendEl.value : '';
-            if (attendVal !== '1') needConfirm++;
+            var morningEl = form.querySelector("select[name='morning[" + cssEscape(code) + "]']");
+            var afternoonEl = form.querySelector("select[name='afternoon[" + cssEscape(code) + "]']");
+            var morningVal = morningEl ? morningEl.value : '';
+            var afternoonVal = afternoonEl ? afternoonEl.value : '';
+            if (morningVal !== '1' && afternoonVal !== '1') needConfirm++;
           });
 
           if (needConfirm <= 0) return;

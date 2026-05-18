@@ -33,11 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'save_check') {
             $attend = $_POST['attend'] ?? [];
             $result = $_POST['result'] ?? [];
+            $morning = $_POST['morning'] ?? [];
+            $afternoon = $_POST['afternoon'] ?? [];
             if (!is_array($attend)) $attend = [];
             if (!is_array($result)) $result = [];
+            if (!is_array($morning)) $morning = [];
+            if (!is_array($afternoon)) $afternoon = [];
 
-            $stats = track_class_save_check($sessionId, $attend, $result);
-            flash_set('success', 'บันทึกแล้ว • อัปเดต ' . $stats['updated'] . ' รายการ • เพิ่มเข้าประวัติ (ผ่าน) ' . $stats['passed_added'] . ' รายการ');
+            $stats = track_class_save_check($sessionId, $attend, $result, $morning, $afternoon);
+            flash_set('success', 'บันทึกแล้ว • อัปเดต ' . $stats['updated'] . ' รายการ • เพิ่มเข้าประวัติ (ผ่าน/ยอดเยี่ยม) ' . $stats['passed_added'] . ' รายการ');
 
             $qs = http_build_query(array_filter([
                 'id' => $sessionId,
@@ -60,7 +64,7 @@ $roster = track_class_roster($sessionId);
 $csrf = csrf_token();
 
 // A small note for the UI.
-$passNote = 'หมายเหตุ: เมื่อตั้งผลเป็น “ผ่าน” ระบบจะเพิ่มวิชานี้เข้าในประวัติ (หน้า ดูรายคน/Transcript) ให้โดยอัตโนมัติ';
+$passNote = 'หมายเหตุ: เมื่อตั้งผลเป็น "ยอดเยี่ยม" หรือ "ผ่าน" ระบบจะเพิ่มวิชานี้เข้าในประวัติ (หน้า ดูรายคน/Transcript) ให้โดยอัตโนมัติ';
 
 echo render('class_attendance/view', [
     'title' => 'เช็คชื่อ: ' . (string)$session['subject_title'],
