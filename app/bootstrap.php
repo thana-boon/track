@@ -27,6 +27,7 @@ if (isset($_SESSION['auth_user']) && is_array($_SESSION['auth_user'])) {
 	$_SESSION['__last_activity_at'] = $now;
 }
 require __DIR__ . '/track_groups.php';
+require __DIR__ . '/class_room_groups.php';
 require __DIR__ . '/track_subjects.php';
 require __DIR__ . '/track_register.php';
 require __DIR__ . '/track_classes.php';

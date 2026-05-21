@@ -126,6 +126,10 @@ switch ($route) {
     case 'class-attendance':
         require __DIR__ . '/app/routes/class_attendance.php';
         break;
+    case 'class_groups':
+    case 'class-groups':
+        require __DIR__ . '/app/routes/class_groups.php';
+        break;
     case 'class_attendance_create':
     case 'class-attendance-create':
         require __DIR__ . '/app/routes/class_attendance_create.php';

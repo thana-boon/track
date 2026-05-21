@@ -342,12 +342,66 @@ $baseQuery = http_build_query(array_filter([
           <div class="text-sm font-semibold">📥 Import รหัสนักเรียน</div>
           <p class="mt-1 text-xs text-ink-800/60">ใส่ 1 บรรทัดต่อ 1 คน (ใส่แค่รหัส หรือ ใส่ชื่อแล้วตามด้วยรหัสก็ได้)</p>
 
+          <?php if (!empty($classGroups)): ?>
+          <div class="mt-3 flex flex-wrap items-end gap-2">
+            <div class="flex-1 min-w-0">
+              <label class="text-xs font-medium">📂 เลือกจากกลุ่มเรียนที่บันทึกไว้</label>
+              <select id="classGroupPicker" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+                <option value="">— เลือกกลุ่ม —</option>
+                <?php foreach ($classGroups as $cg): ?>
+                  <?php
+                    $cgcodes = class_group_parse_codes((string)($cg['student_codes'] ?? ''));
+                    $cgcount = count($cgcodes);
+                  ?>
+                  <option value="<?= e((string)($cg['student_codes'] ?? '')) ?>">
+                    <?= e((string)$cg['title']) ?> (<?= $cgcount ?> คน)
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <button type="button" id="applyGroupBtn" class="shrink-0 rounded-2xl border border-calm-600/40 bg-calm-100 px-4 py-2.5 text-sm text-calm-700 hover:bg-calm-100/70">
+              ✅ นำเข้ากลุ่ม
+            </button>
+            <button type="button" id="appendGroupBtn" class="shrink-0 rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5">
+              ➕ เพิ่มต่อท้าย
+            </button>
+          </div>
+          <p class="mt-1 text-[11px] text-ink-800/60">«นำเข้ากลุ่ม» แทนที่รหัสในกล่องด้านล่าง — «เพิ่มต่อท้าย» รวมเข้ากัน | <a class="underline text-calm-700" href="/tracks/class-groups">จัดการกลุ่มเรียน</a></p>
+          <?php else: ?>
+          <p class="mt-2 text-xs text-ink-800/50">ยังไม่มีกลุ่มเรียน — <a class="underline text-calm-700" href="/tracks/class-groups">สร้างกลุ่มเรียน</a> เพื่อเลือกได้ที่นี่</p>
+          <?php endif; ?>
+
           <textarea
+            id="studentCodesTextarea"
             name="student_codes_text"
             rows="10"
             placeholder="ตัวอย่าง:&#10;65001&#10;สมชาย ใจดี 65002&#10;65003"
             class="mt-3 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500"
           ><?= e((string)($studentCodesText ?? '')) ?></textarea>
+
+          <script>
+          (function () {
+            var picker    = document.getElementById('classGroupPicker');
+            var applyBtn  = document.getElementById('applyGroupBtn');
+            var appendBtn = document.getElementById('appendGroupBtn');
+            var textarea  = document.getElementById('studentCodesTextarea');
+            if (!picker || !textarea) return;
+            if (applyBtn) {
+              applyBtn.addEventListener('click', function () {
+                var raw = picker.value; if (!raw) return;
+                textarea.value = raw; textarea.focus();
+              });
+            }
+            if (appendBtn) {
+              appendBtn.addEventListener('click', function () {
+                var raw = picker.value; if (!raw) return;
+                var existing = textarea.value;
+                textarea.value = existing === '' ? raw : (existing.trimEnd() + '\n' + raw);
+                textarea.focus();
+              });
+            }
+          })();
+          </script>
 
           <div class="mt-4">
             <button class="w-full rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">✅ สร้างรอบเรียน</button>

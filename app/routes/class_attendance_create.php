@@ -63,6 +63,21 @@ if ($yearId > 0) {
     $students = school_students_for_track($yearId, $level, $room, $q, 800);
 }
 
+// Load saved class groups for the group picker
+class_groups_table_ensure();
+$classGroups = class_groups_all();
+
+// If a group was requested via use_group param, pre-fill student_codes_text
+$useGroupId = (int)(query_string('use_group') !== '' ? query_string('use_group') : '0');
+$prefilledFromGroup = '';
+if ($useGroupId > 0) {
+    $groupRow = class_group_get($useGroupId);
+    if ($groupRow !== null) {
+        $prefilledFromGroup = (string)($groupRow['student_codes'] ?? '');
+        $formStudentCodesText = $prefilledFromGroup;
+    }
+}
+
 $error = null;
 $success = flash_get('success');
 
@@ -180,6 +195,7 @@ echo render('class_attendance/create', [
         'q' => $q,
     ],
     'students' => $students,
+    'classGroups' => $classGroups,
     'sessionDate' => $formSessionDate,
     'note' => $formNote,
     'studentCodesText' => $formStudentCodesText,

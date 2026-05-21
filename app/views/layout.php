@@ -200,6 +200,7 @@ $user = auth_user();
                 <button type="button" class="rounded-xl border border-black/5 bg-pastel-sky/45 px-3 py-2 hover:bg-black/5 focus:outline-none">📝 เช็คชื่อ</button>
                 <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_attendance_create">➕ สร้างรอบเรียน</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class-groups">👥 กลุ่มเรียน</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_attendance">📅 ตารางเรียนตามวัน</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_room">🏫 ดูนักเรียนรายห้อง</a>
                 </div>
