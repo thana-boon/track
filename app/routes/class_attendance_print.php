@@ -18,9 +18,9 @@ if (!$session) {
 
 $cols = (int)query_string('cols');
 if ($cols <= 0) {
-    $cols = 6;
+    $cols = 5;
 }
-$cols = max(5, min(10, $cols));
+$cols = max(3, min(8, $cols));
 
 $roster = track_class_roster($sessionId);
 

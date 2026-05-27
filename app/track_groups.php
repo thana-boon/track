@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 function track_groups_table_ensure(): void
 {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
     $pdo = db_app();
 
     $pdo->exec(

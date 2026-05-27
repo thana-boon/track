@@ -124,8 +124,18 @@ $groups = is_array($groups ?? null) ? $groups : [];
       </div>
     </div>
 
-    <div class="mt-4 overflow-hidden rounded-3xl border border-black/5">
-      <table class="min-w-full bg-white text-sm">
+    <div class="mt-4 flex items-center gap-2">
+      <input
+        id="subjectFilter"
+        type="search"
+        placeholder="🔍 ค้นหารหัสวิชา / ชื่อวิชา / กลุ่ม..."
+        class="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500"
+        oninput="filterSubjects()"
+      />
+    </div>
+
+    <div class="mt-2 overflow-hidden rounded-3xl border border-black/5">
+      <table class="min-w-full bg-white text-sm" id="subjectTable">
         <thead class="bg-sand-100 text-left text-xs text-ink-800/70">
           <tr>
             <th class="px-4 py-3">🔤 รหัส</th>
@@ -138,7 +148,7 @@ $groups = is_array($groups ?? null) ? $groups : [];
         </thead>
         <tbody class="divide-y divide-black/5">
           <?php foreach (($subjects ?? []) as $s): ?>
-            <tr class="hover:bg-sand-50">
+            <tr class="hover:bg-sand-50" data-searchable="<?= e(strtolower(($s['subject_code'] ?? '') . ' ' . $s['title'] . ' ' . ($s['group_title'] ?? ''))) ?>">
               <td class="px-4 py-3 text-xs text-ink-800/80">
                 <span class="rounded-xl border border-black/10 bg-white px-2.5 py-1">
                   <?= e((string)($s['subject_code'] ?? '-')) ?>
@@ -189,3 +199,13 @@ $groups = is_array($groups ?? null) ? $groups : [];
     <p class="mt-3 text-xs text-ink-800/60">ข้อมูลถูกเก็บใน <span class="font-mono">sukhon_track.track_subjects</span></p>
   </section>
 </div>
+
+<script>
+function filterSubjects() {
+  const q = document.getElementById('subjectFilter').value.toLowerCase();
+  const rows = document.querySelectorAll('#subjectTable tbody tr[data-searchable]');
+  rows.forEach(function(row) {
+    row.style.display = row.dataset.searchable.includes(q) ? '' : 'none';
+  });
+}
+</script>

@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 function track_subjects_table_ensure(): void
 {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
     $pdo = db_app();
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS track_subjects (
@@ -48,7 +52,7 @@ function track_subjects_all(): array
         . 'g.title AS group_title '
         . 'FROM track_subjects s '
         . 'LEFT JOIN track_groups g ON g.id = s.group_id '
-        . 'ORDER BY s.is_active DESC, s.title ASC'
+        . 'ORDER BY s.subject_code ASC, s.title ASC'
     )->fetchAll();
 }
 

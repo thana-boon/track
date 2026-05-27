@@ -99,7 +99,29 @@ if ($yearId > 0) {
 }
 
 $pdoApp = db_app();
-$teachers = $pdoApp->query("SELECT id, displayname, username, role FROM users WHERE role IN ('teacher','admin') ORDER BY (role='admin') DESC, displayname, username")->fetchAll();
+$teachers = $pdoApp->query("SELECT id, displayname, username, role FROM users WHERE role IN ('teacher','admin')")->fetchAll();
+
+// เรียงตามชื่อหลังคำนำหน้า
+$honorifics = [
+    'ว่าที่ร้อยเอกหญิง', 'ว่าที่ร้อยโทหญิง', 'ว่าที่ร้อยตรีหญิง',
+    'ว่าที่ร้อยเอก', 'ว่าที่ร้อยโท', 'ว่าที่ร้อยตรี',
+    'รศ.ดร.', 'ผศ.ดร.', 'อ.ดร.', 'ดร.',
+    'นางสาว', 'นาง', 'นาย',
+];
+$stripHonorific = static function (string $name) use ($honorifics): string {
+    $name = trim($name);
+    foreach ($honorifics as $h) {
+        if (mb_strpos($name, $h) === 0) {
+            return trim(mb_substr($name, mb_strlen($h)));
+        }
+    }
+    return $name;
+};
+usort($teachers, static function (array $a, array $b) use ($stripHonorific): int {
+    $na = $stripHonorific((string)($a['displayname'] !== '' ? $a['displayname'] : $a['username']));
+    $nb = $stripHonorific((string)($b['displayname'] !== '' ? $b['displayname'] : $b['username']));
+    return strcmp($na, $nb);
+});
 
 $advisorMap = track_class_advisors_map($yearId);
 

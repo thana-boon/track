@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 function track_class_advisors_table_ensure(): void
 {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
     $pdo = db_app();
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS track_class_advisors (
@@ -147,4 +151,66 @@ function track_class_advisor_name(int $yearId, string $classLevel, int $classRoo
         return $name;
     }
     return trim((string)($row['username'] ?? ''));
+}
+
+/**
+ * Bulk advisor name lookup — single query for multiple (year_id, class_level, class_room) combos.
+ *
+ * @param array<array{year_id:int,class_level:string,class_room:int}> $combos
+ * @return array<string, string> Map of "yearId|classLevel|classRoom" => advisor name
+ */
+function track_class_advisors_name_bulk(array $combos): array
+{
+    if ($combos === []) {
+        return [];
+    }
+
+    track_class_advisors_table_ensure();
+    $pdo = db_app();
+
+    // Deduplicate and build WHERE with row value constructors (MySQL supports this)
+    $unique = [];
+    foreach ($combos as $combo) {
+        $yId = (int)($combo['year_id'] ?? 0);
+        $lvl = track_class_level_normalize((string)($combo['class_level'] ?? ''));
+        $room = (int)($combo['class_room'] ?? 0);
+        if ($yId <= 0 || $lvl === '' || $room <= 0) {
+            continue;
+        }
+        $mapKey = $yId . '|' . $lvl . '|' . $room;
+        $unique[$mapKey] = [$yId, $lvl, $room];
+    }
+
+    if ($unique === []) {
+        return [];
+    }
+
+    $orClauses = [];
+    $params = [];
+    foreach ($unique as [$yId, $lvl, $room]) {
+        $orClauses[] = '(a.year_id = ? AND a.class_level = ? AND a.class_room = ?)';
+        $params[] = $yId;
+        $params[] = $lvl;
+        $params[] = $room;
+    }
+
+    $sql = 'SELECT a.year_id, a.class_level, a.class_room, u.displayname, u.username '
+        . 'FROM track_class_advisors a '
+        . 'LEFT JOIN users u ON u.id = a.teacher_user_id '
+        . 'WHERE ' . implode(' OR ', $orClauses);
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+
+    $result = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $mapKey = (int)$row['year_id'] . '|' . (string)$row['class_level'] . '|' . (int)$row['class_room'];
+        $name = trim((string)($row['displayname'] ?? ''));
+        if ($name === '') {
+            $name = trim((string)($row['username'] ?? ''));
+        }
+        $result[$mapKey] = $name;
+    }
+
+    return $result;
 }

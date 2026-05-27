@@ -59,27 +59,18 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
       <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
       <input type="hidden" name="action" value="save_check" />
 
-      <div class="flex items-center justify-between gap-2 bg-sand-100 px-4 py-3">
-        <div class="text-sm font-semibold">👥 รายชื่อนักเรียน</div>
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-sand-100 px-4 py-3">
+        <div class="text-sm font-semibold">👥 รายชื่อนักเรียน (<?= count($roster) ?> คน)</div>
         <div class="flex flex-wrap items-center gap-2">
-          <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'morning[\']').forEach(function(el){el.value='1';});document.querySelectorAll('select[name^=\'afternoon[\']').forEach(function(el){el.value='1';});})();">✅ มาทั้งหมด (เช้า+บ่าย)</button>
+          <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'morning[\']').forEach(function(el){el.value='1';});})();">🌅 มาเช้าทั้งหมด</button>
+          <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'afternoon[\']').forEach(function(el){el.value='1';});})();">🌇 มาบ่ายทั้งหมด</button>
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'result[\']').forEach(function(el){el.value='excellent';});})();">⭐ ยอดเยี่ยมทั้งหมด</button>
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'result[\']').forEach(function(el){el.value='pass';});})();">🟢 ผ่านทั้งหมด</button>
           <button class="rounded-2xl bg-calm-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 บันทึก</button>
         </div>
       </div>
 
-      <div class="overflow-auto">
-        <table class="min-w-full text-sm">
-          <thead class="bg-white text-left text-xs text-ink-800/70">
-            <tr>
-              <th class="px-4 py-3">นักเรียน</th>
-              <th class="px-4 py-3">เช้า</th>
-              <th class="px-4 py-3">บ่าย</th>
-              <th class="px-4 py-3">ผล</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-black/5">
+      <div class="divide-y divide-black/5">
             <?php foreach ($roster as $r): ?>
               <?php
                 $code = (string)($r['student_code'] ?? '');
@@ -94,49 +85,50 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
                 $afternoonVal = $afternoon === null ? '' : ((int)$afternoon === 1 ? '1' : '0');
                 if (!in_array($res, ['pending', 'excellent', 'pass', 'fail'], true)) $res = 'pending';
               ?>
-              <tr class="hover:bg-sand-50">
-                <td class="px-4 py-3">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <div class="font-medium"><?= e($name !== '' ? $name : $code) ?></div>
-                    <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= e($code) ?></span>
+              <div class="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-sand-50">
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="font-medium text-sm"><?= e($name !== '' ? $name : $code) ?></span>
+                    <span class="rounded-full bg-pastel-sky/60 px-2 py-0.5 text-xs text-ink-800/70 ring-1 ring-black/5"><?= e($code) ?></span>
                   </div>
                   <?php if ($meta !== '/ เลขที่'): ?>
-                    <div class="mt-1 text-xs text-ink-800/60"><?= e($meta) ?></div>
+                    <div class="mt-0.5 text-xs text-ink-800/60"><?= e($meta) ?></div>
                   <?php endif; ?>
-                </td>
-                <td class="px-4 py-3">
-                  <select name="morning[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
-                    <option value="" <?= $morningVal === '' ? 'selected' : '' ?>>—</option>
-                    <option value="1" <?= $morningVal === '1' ? 'selected' : '' ?>>✅ มา</option>
-                    <option value="0" <?= $morningVal === '0' ? 'selected' : '' ?>>❌ ขาด</option>
-                  </select>
-                </td>
-                <td class="px-4 py-3">
-                  <select name="afternoon[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
-                    <option value="" <?= $afternoonVal === '' ? 'selected' : '' ?>>—</option>
-                    <option value="1" <?= $afternoonVal === '1' ? 'selected' : '' ?>>✅ มา</option>
-                    <option value="0" <?= $afternoonVal === '0' ? 'selected' : '' ?>>❌ ขาด</option>
-                  </select>
-                </td>
-                <td class="px-4 py-3">
-                  <select name="result[<?= e($code) ?>]" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
-                    <option value="pending" <?= $res === 'pending' ? 'selected' : '' ?>>⏳ รอดำเนินการ</option>
-                    <option value="excellent" <?= $res === 'excellent' ? 'selected' : '' ?>>⭐ ยอดเยี่ยม</option>
-                    <option value="pass" <?= $res === 'pass' ? 'selected' : '' ?>>🟢 ผ่าน</option>
-                    <option value="fail" <?= $res === 'fail' ? 'selected' : '' ?>>🔴 ไม่ผ่าน</option>
-                  </select>
-                </td>
-              </tr>
+                </div>
+                <div class="flex flex-wrap items-end gap-2">
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-[10px] text-ink-800/60 pl-1">เช้า</span>
+                    <select name="morning[<?= e($code) ?>]" class="rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500 min-w-[88px]">
+                      <option value="" <?= $morningVal === '' ? 'selected' : '' ?>>—</option>
+                      <option value="1" <?= $morningVal === '1' ? 'selected' : '' ?>>✅ มา</option>
+                      <option value="0" <?= $morningVal === '0' ? 'selected' : '' ?>>❌ ขาด</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-[10px] text-ink-800/60 pl-1">บ่าย</span>
+                    <select name="afternoon[<?= e($code) ?>]" class="rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500 min-w-[88px]">
+                      <option value="" <?= $afternoonVal === '' ? 'selected' : '' ?>>—</option>
+                      <option value="1" <?= $afternoonVal === '1' ? 'selected' : '' ?>>✅ มา</option>
+                      <option value="0" <?= $afternoonVal === '0' ? 'selected' : '' ?>>❌ ขาด</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-[10px] text-ink-800/60 pl-1">ผล</span>
+                    <select name="result[<?= e($code) ?>]" class="rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500 min-w-[130px]">
+                      <option value="pending" <?= $res === 'pending' ? 'selected' : '' ?>>⏳ รอดำเนินการ</option>
+                      <option value="excellent" <?= $res === 'excellent' ? 'selected' : '' ?>>⭐ ยอดเยี่ยม</option>
+                      <option value="pass" <?= $res === 'pass' ? 'selected' : '' ?>>🟢 ผ่าน</option>
+                      <option value="fail" <?= $res === 'fail' ? 'selected' : '' ?>>🔴 ไม่ผ่าน</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             <?php endforeach; ?>
 
             <?php if (empty($roster)): ?>
-              <tr>
-                <td colspan="3" class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีรายชื่อนักเรียนในรอบเรียนนี้</td>
-              </tr>
+              <div class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีรายชื่อนักเรียนในรอบเรียนนี้</div>
             <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
+        </div>
 
       <div class="flex items-center justify-between gap-2 border-t border-black/5 bg-white px-4 py-3">
         <div class="text-xs text-ink-800/60">บันทึกแล้วจะคงค่าที่เลือกไว้</div>

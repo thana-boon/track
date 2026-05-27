@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 function track_class_tables_ensure(): void
 {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
     $pdo = db_app();
 
     $pdo->exec(
@@ -35,6 +39,7 @@ function track_class_tables_ensure(): void
 
     // Best-effort migrations for older installs
     $migrations = [
+        "ALTER TABLE track_class_sessions ADD COLUMN group_id INT UNSIGNED NULL DEFAULT NULL",
         "ALTER TABLE track_class_sessions ADD COLUMN term TINYINT UNSIGNED NOT NULL DEFAULT 1",
         "ALTER TABLE track_class_sessions ADD COLUMN note VARCHAR(255) NOT NULL DEFAULT ''",
         "ALTER TABLE track_class_sessions DROP INDEX uq_track_class_session",
@@ -105,7 +110,7 @@ function thai_date_long(string $ymd): string
     return 'วัน' . $wd . 'ที่ ' . $d . ' ' . $mn . ' ' . $y;
 }
 
-function track_class_session_create(int $yearId, int $term, int $subjectId, string $sessionDate, string $note, array $studentCodes): int
+function track_class_session_create(int $yearId, int $term, int $subjectId, string $sessionDate, string $note, array $studentCodes, int $groupId = 0): int
 {
     track_class_tables_ensure();
     track_subjects_table_ensure();
@@ -140,14 +145,17 @@ function track_class_session_create(int $yearId, int $term, int $subjectId, stri
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare('INSERT INTO track_class_sessions (year_id, term, subject_id, session_date, note) VALUES (?, ?, ?, ?, ?)');
-        $stmt->execute([$yearId, $term, $subjectId, $sessionDate, $note]);
+        $stmt = $pdo->prepare('INSERT INTO track_class_sessions (year_id, term, subject_id, session_date, note, group_id) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$yearId, $term, $subjectId, $sessionDate, $note, $groupId > 0 ? $groupId : null]);
         $sessionId = (int)$pdo->lastInsertId();
 
-        $stmtIns = $pdo->prepare('INSERT IGNORE INTO track_class_students (session_id, student_code) VALUES (?, ?)');
+        $insRows = implode(',', array_fill(0, count($studentCodes), '(?, ?)'));
+        $insParams = [];
         foreach ($studentCodes as $code) {
-            $stmtIns->execute([$sessionId, $code]);
+            $insParams[] = $sessionId;
+            $insParams[] = $code;
         }
+        $pdo->prepare('INSERT IGNORE INTO track_class_students (session_id, student_code) VALUES ' . $insRows)->execute($insParams);
 
         $pdo->commit();
         return $sessionId;
@@ -175,9 +183,11 @@ function track_class_session_get(int $sessionId): ?array
 
     $pdo = db_app();
     $stmt = $pdo->prepare(
-        'SELECT s.id, s.year_id, s.term, s.subject_id, s.session_date, s.note, s.created_at, s.updated_at, subj.title AS subject_title, subj.description AS subject_description '
+        'SELECT s.id, s.year_id, s.term, s.subject_id, s.session_date, s.note, s.group_id, s.created_at, s.updated_at, subj.title AS subject_title, subj.description AS subject_description, '
+        . 'cg.title AS group_title '
         . 'FROM track_class_sessions s '
         . 'JOIN track_subjects subj ON subj.id = s.subject_id '
+        . 'LEFT JOIN class_groups cg ON cg.id = s.group_id '
         . 'WHERE s.id = ? LIMIT 1'
     );
     $stmt->execute([$sessionId]);
@@ -248,10 +258,12 @@ function track_class_sessions_for_date(int $yearId, int $term, string $sessionDa
     }
 
     $pdo = db_app();
-    $sql = 'SELECT s.id, s.year_id, s.subject_id, s.session_date, s.note, s.created_at, subj.title AS subject_title, '
+    $sql = 'SELECT s.id, s.year_id, s.subject_id, s.session_date, s.note, s.created_at, s.group_id, subj.title AS subject_title, '
+        . 'cg.title AS group_title, '
         . 'COALESCE(cnt.c, 0) AS student_count '
         . 'FROM track_class_sessions s '
         . 'JOIN track_subjects subj ON subj.id = s.subject_id '
+        . 'LEFT JOIN class_groups cg ON cg.id = s.group_id '
         . 'LEFT JOIN (SELECT session_id, COUNT(*) AS c FROM track_class_students GROUP BY session_id) cnt ON cnt.session_id = s.id '
         . 'WHERE s.year_id = ? AND s.term = ? AND s.session_date = ? '
         . 'ORDER BY subj.title, s.id';
@@ -283,7 +295,12 @@ function track_class_session_dates_in_month(int $yearId, int $term, string $ym):
     }
 
     $pdo = db_app();
-    $stmt = $pdo->prepare('SELECT DISTINCT session_date FROM track_class_sessions WHERE year_id = ? AND term = ? AND session_date BETWEEN ? AND ? ORDER BY session_date');
+    $stmt = $pdo->prepare(
+        'SELECT DISTINCT s.session_date FROM track_class_sessions s '
+        . 'JOIN track_subjects subj ON subj.id = s.subject_id '
+        . 'WHERE s.year_id = ? AND s.term = ? AND s.session_date BETWEEN ? AND ? '
+        . 'ORDER BY s.session_date'
+    );
     $stmt->execute([$yearId, $term, $start->format('Y-m-d'), $end->format('Y-m-d')]);
 
     $out = [];
@@ -352,62 +369,73 @@ function track_class_save_check(int $sessionId, array $attendMap, array $resultM
         . 'WHERE session_id = ? AND student_code = ?'
     );
 
-    foreach ($resultMap as $code => $result) {
-        $code = trim((string)$code);
-        if ($code === '') {
-            continue;
-        }
+    try {
+        $pdo->beginTransaction();
 
-        // Morning attendance
-        $morningRaw = $morningMap[$code] ?? '';
-        $morning = null;
-        if ($morningRaw === '1' || $morningRaw === 1) {
-            $morning = 1;
-        } elseif ($morningRaw === '0' || $morningRaw === 0) {
-            $morning = 0;
-        }
+        foreach ($resultMap as $code => $result) {
+            $code = trim((string)$code);
+            if ($code === '') {
+                continue;
+            }
 
-        // Afternoon attendance
-        $afternoonRaw = $afternoonMap[$code] ?? '';
-        $afternoon = null;
-        if ($afternoonRaw === '1' || $afternoonRaw === 1) {
-            $afternoon = 1;
-        } elseif ($afternoonRaw === '0' || $afternoonRaw === 0) {
-            $afternoon = 0;
-        }
+            // Morning attendance
+            $morningRaw = $morningMap[$code] ?? '';
+            $morning = null;
+            if ($morningRaw === '1' || $morningRaw === 1) {
+                $morning = 1;
+            } elseif ($morningRaw === '0' || $morningRaw === 0) {
+                $morning = 0;
+            }
 
-        // Derive combined attend_status: present if either session attended.
-        // If morning/afternoon maps provided, derive from them; otherwise fall back to legacy attendMap.
-        if (count($morningMap) > 0 || count($afternoonMap) > 0) {
-            if ($morning === 1 || $afternoon === 1) {
-                $att = 1;
-            } elseif ($morning === 0 || $afternoon === 0) {
-                $att = 0;
+            // Afternoon attendance
+            $afternoonRaw = $afternoonMap[$code] ?? '';
+            $afternoon = null;
+            if ($afternoonRaw === '1' || $afternoonRaw === 1) {
+                $afternoon = 1;
+            } elseif ($afternoonRaw === '0' || $afternoonRaw === 0) {
+                $afternoon = 0;
+            }
+
+            // Derive combined attend_status: present if either session attended.
+            // If morning/afternoon maps provided, derive from them; otherwise fall back to legacy attendMap.
+            if (count($morningMap) > 0 || count($afternoonMap) > 0) {
+                if ($morning === 1 || $afternoon === 1) {
+                    $att = 1;
+                } elseif ($morning === 0 || $afternoon === 0) {
+                    $att = 0;
+                } else {
+                    $att = null;
+                }
             } else {
+                $attRaw = $attendMap[$code] ?? '';
                 $att = null;
+                if ($attRaw === '1' || $attRaw === 1 || $attRaw === true) {
+                    $att = 1;
+                }
+                if ($attRaw === '0' || $attRaw === 0 || $attRaw === false) {
+                    $att = 0;
+                }
             }
-        } else {
-            $attRaw = $attendMap[$code] ?? '';
-            $att = null;
-            if ($attRaw === '1' || $attRaw === 1 || $attRaw === true) {
-                $att = 1;
+
+            $res = (string)$result;
+            if (!in_array($res, ['pending', 'excellent', 'pass', 'fail'], true)) {
+                $res = 'pending';
             }
-            if ($attRaw === '0' || $attRaw === 0 || $attRaw === false) {
-                $att = 0;
+
+            $stmtUp->execute([$att, $morning, $afternoon, $res, $sessionId, $code]);
+            $updated += $stmtUp->rowCount();
+
+            if ($res === 'pass' || $res === 'excellent') {
+                $passedCodes[$code] = $res; // store with their result for registration
             }
         }
 
-        $res = (string)$result;
-        if (!in_array($res, ['pending', 'excellent', 'pass', 'fail'], true)) {
-            $res = 'pending';
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
         }
-
-        $stmtUp->execute([$att, $morning, $afternoon, $res, $sessionId, $code]);
-        $updated += $stmtUp->rowCount();
-
-        if ($res === 'pass' || $res === 'excellent') {
-            $passedCodes[$code] = $res; // store with their result for registration
-        }
+        throw $e;
     }
 
     $passedAdded = 0;
@@ -501,10 +529,13 @@ function track_class_session_update(int $sessionId, int $subjectId, string $sess
         }
 
         if (count($toAdd) > 0) {
-            $stmtIns = $pdo->prepare('INSERT IGNORE INTO track_class_students (session_id, student_code) VALUES (?, ?)');
+            $insRows = implode(',', array_fill(0, count($toAdd), '(?, ?)'));
+            $insParams = [];
             foreach ($toAdd as $code) {
-                $stmtIns->execute([$sessionId, $code]);
+                $insParams[] = $sessionId;
+                $insParams[] = $code;
             }
+            $pdo->prepare('INSERT IGNORE INTO track_class_students (session_id, student_code) VALUES ' . $insRows)->execute($insParams);
         }
 
         $pdo->commit();
@@ -662,4 +693,103 @@ function track_transcript_rows(string $studentCode): array
     });
 
     return $rows;
+}
+
+/**
+ * Bulk version of track_transcript_rows() — fetches transcript data for
+ * multiple students using just 2 DB queries instead of 2N.
+ *
+ * @param string[] $studentCodes
+ * @return array<string, array> Map of student_code => rows[]
+ */
+function track_transcript_rows_bulk(array $studentCodes): array
+{
+    track_class_tables_ensure();
+    track_registrations_table_ensure();
+    track_subjects_table_ensure();
+    track_groups_table_ensure();
+
+    $studentCodes = array_values(array_unique(array_filter(
+        array_map('trim', $studentCodes),
+        static fn($v) => $v !== ''
+    )));
+    if ($studentCodes === []) {
+        return [];
+    }
+
+    $pdo = db_app();
+    $ph = implode(',', array_fill(0, count($studentCodes), '?'));
+
+    // 1) Registered subjects for all students
+    $stmtReg = $pdo->prepare(
+        'SELECT DISTINCT r.student_code, r.year_id, r.term, subj.id AS subject_id, subj.group_id, g.title AS group_title, '
+        . 'subj.subject_code, subj.title AS subject_title, subj.description AS subject_description, '
+        . "(CASE WHEN r.result_status = 'pass' THEN 'pass' ELSE 'registered' END) AS status "
+        . 'FROM track_registrations r '
+        . 'JOIN track_subjects subj ON subj.id = r.subject_id '
+        . 'LEFT JOIN track_groups g ON g.id = subj.group_id '
+        . "WHERE r.student_code IN ($ph)"
+    );
+    $stmtReg->execute($studentCodes);
+    $regRows = $stmtReg->fetchAll();
+
+    // 2) Passed/excellent subjects for all students
+    $stmtPass = $pdo->prepare(
+        'SELECT DISTINCT cs.student_code, sess.year_id, sess.term, subj.id AS subject_id, subj.group_id, g.title AS group_title, '
+        . 'subj.subject_code, subj.title AS subject_title, subj.description AS subject_description, '
+        . 'cs.result_status AS status '
+        . 'FROM track_class_students cs '
+        . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
+        . 'JOIN track_subjects subj ON subj.id = sess.subject_id '
+        . 'LEFT JOIN track_groups g ON g.id = subj.group_id '
+        . "WHERE cs.student_code IN ($ph) AND cs.result_status IN ('pass', 'excellent')"
+    );
+    $stmtPass->execute($studentCodes);
+    $passRows = $stmtPass->fetchAll();
+
+    // Merge with preference: excellent > pass > registered, per student
+    $statusRank = ['excellent' => 3, 'pass' => 2, 'registered' => 1];
+    $byStudentKey = []; // [studentCode][year-term-subjectId] => row
+
+    foreach ($regRows as $r) {
+        $sc = (string)($r['student_code'] ?? '');
+        $key = (int)($r['year_id'] ?? 0) . '-' . (int)($r['term'] ?? 1) . '-' . (int)($r['subject_id'] ?? 0);
+        if (!isset($byStudentKey[$sc][$key])) {
+            $byStudentKey[$sc][$key] = $r;
+        }
+    }
+    foreach ($passRows as $r) {
+        $sc = (string)($r['student_code'] ?? '');
+        $key = (int)($r['year_id'] ?? 0) . '-' . (int)($r['term'] ?? 1) . '-' . (int)($r['subject_id'] ?? 0);
+        $curRank = isset($byStudentKey[$sc][$key]) ? ($statusRank[(string)($byStudentKey[$sc][$key]['status'] ?? '')] ?? 0) : 0;
+        $newRank = $statusRank[(string)($r['status'] ?? '')] ?? 0;
+        if ($newRank > $curRank) {
+            $byStudentKey[$sc][$key] = $r;
+        }
+    }
+
+    $result = [];
+    foreach ($byStudentKey as $sc => $keyedRows) {
+        $rows = array_values($keyedRows);
+        usort($rows, static function (array $a, array $b): int {
+            $ya = (int)($a['year_id'] ?? 0);
+            $yb = (int)($b['year_id'] ?? 0);
+            if ($ya !== $yb) return $ya <=> $yb;
+            $ta = (int)($a['term'] ?? 1);
+            $tb = (int)($b['term'] ?? 1);
+            if ($ta !== $tb) return $ta <=> $tb;
+            $ga = (string)($a['group_title'] ?? '');
+            $gb = (string)($b['group_title'] ?? '');
+            $c = strcmp($ga, $gb);
+            if ($c !== 0) return $c;
+            $ca = (string)($a['subject_code'] ?? '');
+            $cb = (string)($b['subject_code'] ?? '');
+            $c2 = strcmp($ca, $cb);
+            if ($c2 !== 0) return $c2;
+            return strcmp((string)($a['subject_title'] ?? ''), (string)($b['subject_title'] ?? ''));
+        });
+        $result[$sc] = $rows;
+    }
+
+    return $result;
 }

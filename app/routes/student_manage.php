@@ -91,10 +91,8 @@ foreach ($years as $y) {
 
 if ($yearId > 0 && $studentCode !== '') {
     $student = school_student_get($yearId, $studentCode);
-    if (!$student) {
-        // If user typed code manually but filtered year doesn't match, fall back.
-        $student = school_student_get_any_year($studentCode);
-    }
+    // No fallback: student must exist in the selected year;
+    // if not found, the detail panel stays empty.
 
     if ($student) {
         $pdoApp = db_app();

@@ -125,9 +125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $codes = [];
             }
 
+            // When printing all filtered results we already have the full student rows —
+            // reuse them instead of re-querying one-by-one.
+            $preloadedStudents = []; // student_code => student row
             if ($scope === 'all_filtered') {
                 $list = school_students_for_track($yearId, $level, $room, $q, 2000);
-                $codes = array_map(static fn($s) => (string)($s['student_code'] ?? ''), $list);
+                foreach ($list as $s) {
+                    $preloadedStudents[(string)($s['student_code'] ?? '')] = $s;
+                }
+                $codes = array_keys($preloadedStudents);
             }
 
             $codes = array_values(array_unique(array_filter(array_map('trim', array_map('strval', $codes)), static fn($v) => $v !== '')));
@@ -135,25 +141,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('กรุณาเลือกนักเรียนอย่างน้อย 1 คน');
             }
 
-            $printStudents = [];
-            foreach ($codes as $c) {
-                $st = school_student_get($yearId, $c);
-                if (!$st) {
-                    $st = school_student_get_any_year($c);
+            // Batch-fetch student rows for codes not yet preloaded (selected scope).
+            $missingCodes = array_values(array_filter($codes, static fn($c) => !isset($preloadedStudents[$c])));
+            if ($missingCodes !== []) {
+                $pdoSchool = db_school();
+                $ph = implode(',', array_fill(0, count($missingCodes), '?'));
+
+                // Primary: match the current year
+                $stmt = $pdoSchool->prepare(
+                    "SELECT year_id, student_code, first_name, last_name, class_level, class_room, number_in_room "
+                    . "FROM students WHERE year_id = ? AND student_code IN ($ph)"
+                );
+                $stmt->execute(array_merge([$yearId], $missingCodes));
+                foreach ($stmt->fetchAll() as $s) {
+                    $preloadedStudents[(string)$s['student_code']] = $s;
                 }
-                if (!$st) {
+
+                // Fallback: any year (for students not in the selected year)
+                $stillMissing = array_values(array_filter($missingCodes, static fn($c) => !isset($preloadedStudents[$c])));
+                if ($stillMissing !== []) {
+                    $ph2 = implode(',', array_fill(0, count($stillMissing), '?'));
+                    $stmt2 = $pdoSchool->prepare(
+                        "SELECT s.year_id, s.student_code, s.first_name, s.last_name, s.class_level, s.class_room, s.number_in_room "
+                        . "FROM students s JOIN academic_years ay ON ay.id = s.year_id "
+                        . "WHERE s.student_code IN ($ph2) "
+                        . "ORDER BY ay.year_be DESC, s.year_id DESC"
+                    );
+                    $stmt2->execute($stillMissing);
+                    foreach ($stmt2->fetchAll() as $s) {
+                        $sc = (string)$s['student_code'];
+                        if (!isset($preloadedStudents[$sc])) {
+                            $preloadedStudents[$sc] = $s;
+                        }
+                    }
+                }
+            }
+
+            // Batch-fetch all transcript rows in 2 queries total.
+            $allTranscripts = track_transcript_rows_bulk($codes);
+
+            // Batch-fetch advisor names in 1 query total.
+            $advisorCombos = [];
+            foreach ($codes as $c) {
+                if (!isset($preloadedStudents[$c])) {
                     continue;
                 }
-                $transcriptRows = track_transcript_rows((string)$st['student_code']);
-                $advisorNameResolved = track_class_advisor_name(
-                    (int)($st['year_id'] ?? $yearId),
-                    (string)($st['class_level'] ?? ''),
-                    (int)($st['class_room'] ?? 0)
-                );
-                if ($advisorNameResolved === '') {
-                    $advisorNameResolved = trim((string)($settingsForPrint['advisor_name'] ?? ''));
+                $st = $preloadedStudents[$c];
+                $advisorCombos[] = [
+                    'year_id'     => (int)($st['year_id'] ?? $yearId),
+                    'class_level' => (string)($st['class_level'] ?? ''),
+                    'class_room'  => (int)($st['class_room'] ?? 0),
+                ];
+            }
+            $advisorMap = track_class_advisors_name_bulk($advisorCombos);
+            $defaultAdvisorName = trim((string)($settingsForPrint['advisor_name'] ?? ''));
+
+            $printStudents = [];
+            foreach ($codes as $c) {
+                if (!isset($preloadedStudents[$c])) {
+                    continue;
                 }
-                $printStudents[] = ['student' => $st, 'transcriptRows' => $transcriptRows, 'advisorName' => $advisorNameResolved];
+                $st = $preloadedStudents[$c];
+                $yId  = (int)($st['year_id'] ?? $yearId);
+                $lvl  = track_class_level_normalize((string)($st['class_level'] ?? ''));
+                $room2 = (int)($st['class_room'] ?? 0);
+                $advisorName = $advisorMap[$yId . '|' . $lvl . '|' . $room2] ?? '';
+                if ($advisorName === '') {
+                    $advisorName = $defaultAdvisorName;
+                }
+                $printStudents[] = [
+                    'student'        => $st,
+                    'transcriptRows' => $allTranscripts[$c] ?? [],
+                    'advisorName'    => $advisorName,
+                ];
             }
 
             $viewData = [

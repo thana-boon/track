@@ -114,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $note = input_string('note');
             $subjectIdPost = (int)input_string('subject_id');
             $yearIdPost = (int)input_string('year_id');
+            $groupIdPost = (int)input_string('selected_group_id');
 
             $formNote = $note;
 
@@ -152,10 +153,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $codes = array_keys($uniq);
 
+            // Validate student codes exist in the school database for this year
+            if (count($codes) > 0) {
+                $pdoSchool = db_school();
+                $placeholders = implode(',', array_fill(0, count($codes), '?'));
+                $params = array_merge([$yearIdPost], $codes);
+                $stmt = $pdoSchool->prepare(
+                    'SELECT student_code FROM students WHERE year_id = ? AND student_code IN (' . $placeholders . ')'
+                );
+                $stmt->execute($params);
+                $validCodes = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+                $validCodesMap = array_flip($validCodes);
+                $invalidCodes = array_filter($codes, static fn($c) => !isset($validCodesMap[$c]));
+                if (count($invalidCodes) > 0) {
+                    throw new RuntimeException('ไม่พบนักเรียนเลขประจำตัว: ' . implode(', ', $invalidCodes));
+                }
+            }
+
             // Create one session per date
             $firstSessionId = 0;
             foreach ($sessionDates as $date) {
-                $sid = track_class_session_create($yearIdPost, $term, $subjectIdPost, $date, $note, $codes);
+                $sid = track_class_session_create($yearIdPost, $term, $subjectIdPost, $date, $note, $codes, $groupIdPost);
                 if ($firstSessionId === 0) {
                     $firstSessionId = $sid;
                 }

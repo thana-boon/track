@@ -152,6 +152,44 @@ $user = auth_user();
     })();
   </script>
 </head>
+<style>
+  .nav-dd-open { animation: navDdIn 0.15s ease forwards; }
+  @keyframes navDdIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+<script>
+  function navToggle(id) {
+    var all = document.querySelectorAll('.nav-dd');
+    var target = document.getElementById(id);
+    var wasHidden = target ? target.classList.contains('hidden') : true;
+    all.forEach(function(el) {
+      el.classList.add('hidden');
+      el.classList.remove('nav-dd-open');
+    });
+    if (wasHidden && target) {
+      target.classList.remove('hidden');
+      target.classList.add('nav-dd-open');
+    }
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('[data-dd]')) {
+      document.querySelectorAll('.nav-dd').forEach(function(el) {
+        el.classList.add('hidden');
+        el.classList.remove('nav-dd-open');
+      });
+    }
+  });
+</script>
+<style>
+  .nav-dd { transform-origin: top center; }
+  .nav-dd-open { animation: navDdIn 0.15s ease forwards; }
+  @keyframes navDdIn {
+    from { opacity: 0; transform: translateY(-6px) scaleY(0.95); }
+    to   { opacity: 1; transform: translateY(0)  scaleY(1); }
+  }
+</style>
 <body class="min-h-screen bg-gradient-to-b from-pastel-lilac/40 via-sand-50 to-pastel-mint/30 text-ink-900">
 
   <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
@@ -177,18 +215,18 @@ $user = auth_user();
             <div class="flex min-w-max flex-nowrap items-center gap-2">
   			  <?php if ($role === 'admin'): ?>
 
-              <div class="relative shrink-0 group">
-                <button type="button" class="rounded-xl border border-black/5 bg-sand-100/70 px-3 py-2 hover:bg-black/5 focus:outline-none">📋 ข้อมูล</button>
-                <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+              <div class="relative shrink-0" data-dd="nav-data">
+                <button type="button" onclick="navToggle('nav-data')" class="rounded-xl border border-black/5 bg-sand-100/70 px-3 py-2 hover:bg-black/5 focus:outline-none">📋 ข้อมูล</button>
+                <div id="nav-data" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/students">📋 รายชื่อ</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/academic_year">📅 ปีการศึกษา</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_advisors">👩‍🏫 ครูประจำชั้น</a>
                 </div>
               </div>
 
-              <div class="relative shrink-0 group">
-                <button type="button" class="rounded-xl border border-black/5 bg-pastel-mint/45 px-3 py-2 hover:bg-black/5 focus:outline-none">🧩 วิชา/ลงทะเบียน</button>
-                <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+              <div class="relative shrink-0" data-dd="nav-track">
+                <button type="button" onclick="navToggle('nav-track')" class="rounded-xl border border-black/5 bg-pastel-mint/45 px-3 py-2 hover:bg-black/5 focus:outline-none">🧩 วิชา/ลงทะเบียน</button>
+                <div id="nav-track" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/track-groups">🧩 กลุ่ม Track</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/track-subjects">🧩 วิชา</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/register_track">🧾 ลงทะเบียน</a>
@@ -196,9 +234,9 @@ $user = auth_user();
                 </div>
               </div>
 
-              <div class="relative shrink-0 group">
-                <button type="button" class="rounded-xl border border-black/5 bg-pastel-sky/45 px-3 py-2 hover:bg-black/5 focus:outline-none">📝 เช็คชื่อ</button>
-                <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+              <div class="relative shrink-0" data-dd="nav-att">
+                <button type="button" onclick="navToggle('nav-att')" class="rounded-xl border border-black/5 bg-pastel-sky/45 px-3 py-2 hover:bg-black/5 focus:outline-none">📝 เช็คชื่อ</button>
+                <div id="nav-att" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_attendance_create">➕ สร้างรอบเรียน</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class-groups">👥 กลุ่มเรียน</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_attendance">📅 ตารางเรียนตามวัน</a>
@@ -206,18 +244,18 @@ $user = auth_user();
                 </div>
               </div>
 
-              <div class="relative shrink-0 group">
-                <button type="button" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">🖨️ รายงาน</button>
-                <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+              <div class="relative shrink-0" data-dd="nav-report">
+                <button type="button" onclick="navToggle('nav-report')" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">🖨️ รายงาน</button>
+                <div id="nav-report" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/report_statement">🖨️ ใบ Transcript</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/activity_logs">📜 Activity log</a>
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/backup_restore">💾 Backup/Restore</a>
                 </div>
               </div>
 
-              <div class="relative shrink-0 group">
-                <button type="button" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">👤 ผู้ใช้</button>
-                <div class="absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm opacity-0 pointer-events-none transition-opacity duration-150 delay-300 group-hover:delay-0 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:delay-0 group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+              <div class="relative shrink-0" data-dd="nav-users">
+                <button type="button" onclick="navToggle('nav-users')" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">👤 ผู้ใช้</button>
+                <div id="nav-users" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
                   <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/users">👤 ผู้ใช้</a>
                 </div>
               </div>

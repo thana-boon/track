@@ -317,7 +317,7 @@ $stmtList = $pdo->prepare(
     'SELECT id, username, displayname, role, created_at '
     . 'FROM users '
     . $sqlWhere . ' '
-    . 'ORDER BY id DESC '
+    . 'ORDER BY username ASC '
     . 'LIMIT ' . (int)$pageSize . ' OFFSET ' . (int)$offset
 );
 $stmtList->execute($params);

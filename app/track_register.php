@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 function track_registrations_table_ensure(): void
 {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
     $pdo = db_app();
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS track_registrations (
@@ -99,15 +103,16 @@ function track_reg_assign_bulk_for_term(int $yearId, int $term, int $subjectId, 
     }
 
     $pdo = db_app();
-    $stmt = $pdo->prepare('INSERT IGNORE INTO track_registrations (year_id, term, student_code, subject_id, result_status) VALUES (:y, :t, :c, :s, :rs)');
 
-    $inserted = 0;
+    $rows = [];
+    $params = [];
     foreach ($studentCodes as $code) {
-        $stmt->execute([':y' => $yearId, ':t' => $term, ':c' => $code, ':s' => $subjectId, ':rs' => $resultStatus]);
-        $inserted += $stmt->rowCount();
+        $rows[] = '(?, ?, ?, ?, ?)';
+        array_push($params, $yearId, $term, $code, $subjectId, $resultStatus);
     }
-
-    return $inserted;
+    $stmt = $pdo->prepare('INSERT IGNORE INTO track_registrations (year_id, term, student_code, subject_id, result_status) VALUES ' . implode(',', $rows));
+    $stmt->execute($params);
+    return $stmt->rowCount();
 }
 
 /**

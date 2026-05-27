@@ -60,7 +60,7 @@ if ($sessionDate !== '') {
 
     <div class="mt-4 overflow-hidden rounded-3xl border border-black/5 bg-white/80">
       <div class="flex flex-wrap items-center justify-between gap-2 bg-sand-100 px-4 py-3">
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <label class="text-xs font-medium text-ink-800/70">ปีการศึกษา</label>
           <select id="attYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attYear'); var t=document.getElementById('attTerm'); if(!y||!t) return; location.href='/tracks/class_attendance?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
             <?php foreach (($years ?? []) as $y): ?>
@@ -80,17 +80,41 @@ if ($sessionDate !== '') {
           </select>
         </div>
 
-        <div class="flex items-center gap-2">
-          <label class="text-xs font-medium text-ink-800/70">เลือกวัน</label>
-          <input
-            type="date"
-            value="<?= e($sessionDate) ?>"
-            class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500"
-            onchange="location.href='/tracks/class_attendance?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&session_date='+encodeURIComponent(this.value)"
-          />
-          <?php if ($sessionDateDisplay !== ''): ?>
-            <span class="text-xs text-ink-800/60">(<?= e($sessionDateDisplay) ?>)</span>
-          <?php endif; ?>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="text-xs font-medium text-ink-800/70">เดือน</label>
+          <?php
+            $curYear  = (int)substr($sessionDate, 0, 4);
+            $curMonth = (int)substr($sessionDate, 5, 2);
+            $thaiMonthNames = [
+              1=>'มกราคม',2=>'กุมภาพันธ์',3=>'มีนาคม',4=>'เมษายน',
+              5=>'พฤษภาคม',6=>'มิถุนายน',7=>'กรกฎาคม',8=>'สิงหาคม',
+              9=>'กันยายน',10=>'ตุลาคม',11=>'พฤศจิกายน',12=>'ธันวาคม',
+            ];
+          ?>
+          <select id="attMonth" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500"
+            onchange="(function(){
+              var m=document.getElementById('attMonth');
+              var yr=document.getElementById('attMonthYear');
+              if(!m||!yr) return;
+              var mm=m.value.padStart(2,'0');
+              location.href='/tracks/class_attendance?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&session_date='+encodeURIComponent(yr.value+'-'+mm+'-01');
+            })()">
+            <?php foreach ($thaiMonthNames as $mn => $mLabel): ?>
+              <option value="<?= $mn ?>" <?= $mn === $curMonth ? 'selected' : '' ?>><?= $mLabel ?></option>
+            <?php endforeach; ?>
+          </select>
+          <select id="attMonthYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500"
+            onchange="(function(){
+              var m=document.getElementById('attMonth');
+              var yr=document.getElementById('attMonthYear');
+              if(!m||!yr) return;
+              var mm=m.value.padStart(2,'0');
+              location.href='/tracks/class_attendance?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&session_date='+encodeURIComponent(yr.value+'-'+mm+'-01');
+            })()">
+            <?php foreach (range($curYear - 1, $curYear + 1) as $yr): ?>
+              <option value="<?= $yr ?>" <?= $yr === $curYear ? 'selected' : '' ?>><?= $yr + 543 ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
       </div>
 
@@ -115,24 +139,12 @@ if ($sessionDate !== '') {
 
       <div class="px-4 py-3 text-xs text-ink-800/60"><?= e(thai_date_long($sessionDate)) ?></div>
 
-      <div class="overflow-auto">
-        <table class="min-w-full bg-white text-sm">
-          <thead class="bg-sand-50 text-left text-xs text-ink-800/70">
-            <tr>
-              <th class="px-4 py-3">วิชา</th>
-              <th class="px-4 py-3">หมายเหตุ</th>
-              <th class="px-4 py-3">จำนวน</th>
-              <th class="px-4 py-3">ไปเช็คชื่อ</th>
-              <?php if ($role === 'admin'): ?>
-                <th class="px-4 py-3">จัดการ</th>
-              <?php endif; ?>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-black/5">
+      <div class="divide-y divide-black/5 bg-white">
             <?php foreach ($sessionsForDate as $sess): ?>
               <?php
                 $id = (int)($sess['id'] ?? 0);
                 $subj = (string)($sess['subject_title'] ?? '');
+                $groupTitle = trim((string)($sess['group_title'] ?? ''));
                 $note = trim((string)($sess['note'] ?? ''));
                 $count = (int)($sess['student_count'] ?? 0);
                 $href = '/tracks/class_attendance_view?id=' . $id
@@ -145,42 +157,43 @@ if ($sessionDate !== '') {
                   . '&return_year=' . (int)$yearId
                   . '&return_date=' . urlencode((string)$sessionDate);
               ?>
-              <tr class="hover:bg-sand-50">
-                <td class="px-4 py-3">
-                  <div class="font-medium"><?= e($subj) ?></div>
-                </td>
-                <td class="px-4 py-3 text-xs text-ink-800/60"><?= e($note !== '' ? $note : '—') ?></td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex items-center rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= $count ?> คน</span>
-                </td>
-                <td class="px-4 py-3">
-                  <a class="inline-flex items-center rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="<?= e($href) ?>">เช็คชื่อ →</a>
-                </td>
-                <?php if ($role === 'admin'): ?>
-                  <td class="px-4 py-3">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <a class="inline-flex items-center rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="<?= e($editHref) ?>">✏️ แก้ไข</a>
+              <div class="px-4 py-4 hover:bg-sand-50">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="font-medium text-sm"><?= e($subj) ?></div>
+                    <?php if ($groupTitle !== ''): ?>
+                      <div class="mt-1">
+                        <span class="inline-flex items-center rounded-full bg-pastel-mint/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5">📂 <?= e($groupTitle) ?></span>
+                      </div>
+                    <?php endif; ?>
+                    <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                      <span class="inline-flex items-center rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= $count ?> คน</span>
+                      <?php if ($note !== ''): ?>
+                        <span class="text-xs text-ink-800/60"><?= e($note) ?></span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <a class="inline-flex items-center rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500" href="<?= e($href) ?>">✅ เช็คชื่อ</a>
+                    <?php if ($role === 'admin'): ?>
+                      <a class="inline-flex items-center rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm hover:bg-black/5" href="<?= e($editHref) ?>">✏️ แก้ไข</a>
                       <form method="post" action="/tracks/class_attendance_delete" data-confirm="ต้องการลบรอบเรียนนี้ใช่ไหม? การเช็คชื่อ/ผลในรอบนี้จะหายไปด้วย">
                         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                         <input type="hidden" name="session_id" value="<?= (int)$id ?>" />
                         <input type="hidden" name="term" value="<?= (int)$term ?>" />
                         <input type="hidden" name="return_year" value="<?= (int)$yearId ?>" />
                         <input type="hidden" name="return_date" value="<?= e((string)$sessionDate) ?>" />
-                        <button class="inline-flex items-center rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800 hover:bg-red-100">🗑️ ลบ</button>
+                        <button class="inline-flex items-center rounded-2xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800 hover:bg-red-100">🗑️ ลบ</button>
                       </form>
-                    </div>
-                  </td>
-                <?php endif; ?>
-              </tr>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              </div>
             <?php endforeach; ?>
 
             <?php if (empty($sessionsForDate)): ?>
-              <tr>
-                <td colspan="<?= $role === 'admin' ? 5 : 4 ?>" class="px-4 py-10 text-center text-sm text-ink-800/70">วันนี้ยังไม่มีรอบเรียน</td>
-              </tr>
+              <div class="px-4 py-10 text-center text-sm text-ink-800/70">วันนี้ยังไม่มีรอบเรียน</div>
             <?php endif; ?>
-          </tbody>
-        </table>
       </div>
 
       <div class="border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60">

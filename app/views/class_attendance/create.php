@@ -47,6 +47,7 @@ $baseQuery = http_build_query(array_filter([
     <form class="mt-4 grid gap-4" method="post">
       <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
       <input type="hidden" name="action" value="create_session" />
+      <input type="hidden" id="selectedGroupId" name="selected_group_id" value="" />
 
       <div class="grid gap-3 md:grid-cols-3">
         <div>
@@ -74,13 +75,26 @@ $baseQuery = http_build_query(array_filter([
         <div>
           <label class="text-xs font-medium">วิชา</label>
           <select name="subject_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&subject_id='+encodeURIComponent(this.value)">
-            <?php foreach (($subjects ?? []) as $s): ?>
-              <?php
-                $id = (int)($s['id'] ?? 0);
-                $label = (string)($s['title'] ?? '');
-                $suffix = ((int)($s['is_active'] ?? 1) === 1) ? '' : ' (ปิด)';
-              ?>
-              <option value="<?= $id ?>" <?= $id === $subjectId ? 'selected' : '' ?>><?= e($label . $suffix) ?></option>
+            <?php
+              $grouped = [];
+              foreach (($subjects ?? []) as $s) {
+                  $grp = (string)($s['group_title'] ?? 'ไม่มีกลุ่ม');
+                  $grouped[$grp][] = $s;
+              }
+              foreach ($grouped as $grpLabel => $items):
+            ?>
+              <optgroup label="<?= e($grpLabel) ?>">
+                <?php foreach ($items as $s): ?>
+                  <?php
+                    $id = (int)($s['id'] ?? 0);
+                    $code = (string)($s['subject_code'] ?? '');
+                    $title = (string)($s['title'] ?? '');
+                    $label = $code !== '' ? "[{$code}] {$title}" : $title;
+                    $suffix = ((int)($s['is_active'] ?? 1) === 1) ? '' : ' (ปิด)';
+                  ?>
+                  <option value="<?= $id ?>" <?= $id === $subjectId ? 'selected' : '' ?>><?= e($label . $suffix) ?></option>
+                <?php endforeach; ?>
+              </optgroup>
             <?php endforeach; ?>
           </select>
         </div>
@@ -343,30 +357,27 @@ $baseQuery = http_build_query(array_filter([
           <p class="mt-1 text-xs text-ink-800/60">ใส่ 1 บรรทัดต่อ 1 คน (ใส่แค่รหัส หรือ ใส่ชื่อแล้วตามด้วยรหัสก็ได้)</p>
 
           <?php if (!empty($classGroups)): ?>
-          <div class="mt-3 flex flex-wrap items-end gap-2">
-            <div class="flex-1 min-w-0">
-              <label class="text-xs font-medium">📂 เลือกจากกลุ่มเรียนที่บันทึกไว้</label>
-              <select id="classGroupPicker" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+          <div class="mt-3">
+            <label class="text-xs font-medium">📂 เลือกจากกลุ่มเรียนที่บันทึกไว้</label>
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+              <select id="classGroupPicker" class="flex-1 min-w-0 rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
                 <option value="">— เลือกกลุ่ม —</option>
                 <?php foreach ($classGroups as $cg): ?>
                   <?php
                     $cgcodes = class_group_parse_codes((string)($cg['student_codes'] ?? ''));
                     $cgcount = count($cgcodes);
                   ?>
-                  <option value="<?= e((string)($cg['student_codes'] ?? '')) ?>">
+                  <option value="<?= e((string)($cg['student_codes'] ?? '')) ?>" data-gid="<?= (int)$cg['id'] ?>">
                     <?= e((string)$cg['title']) ?> (<?= $cgcount ?> คน)
                   </option>
                 <?php endforeach; ?>
               </select>
+              <button type="button" id="appendGroupBtn" class="shrink-0 rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5">
+                ➕ เพิ่มต่อท้าย
+              </button>
             </div>
-            <button type="button" id="applyGroupBtn" class="shrink-0 rounded-2xl border border-calm-600/40 bg-calm-100 px-4 py-2.5 text-sm text-calm-700 hover:bg-calm-100/70">
-              ✅ นำเข้ากลุ่ม
-            </button>
-            <button type="button" id="appendGroupBtn" class="shrink-0 rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5">
-              ➕ เพิ่มต่อท้าย
-            </button>
+            <p class="mt-1 text-[11px] text-ink-800/60">เลือกกลุ่ม = แทนที่รหัสในกล่องอัตโนมัติ — «เพิ่มต่อท้าย» รวมเข้ากัน | <a class="underline text-calm-700" href="/tracks/class-groups">จัดการกลุ่มเรียน</a></p>
           </div>
-          <p class="mt-1 text-[11px] text-ink-800/60">«นำเข้ากลุ่ม» แทนที่รหัสในกล่องด้านล่าง — «เพิ่มต่อท้าย» รวมเข้ากัน | <a class="underline text-calm-700" href="/tracks/class-groups">จัดการกลุ่มเรียน</a></p>
           <?php else: ?>
           <p class="mt-2 text-xs text-ink-800/50">ยังไม่มีกลุ่มเรียน — <a class="underline text-calm-700" href="/tracks/class-groups">สร้างกลุ่มเรียน</a> เพื่อเลือกได้ที่นี่</p>
           <?php endif; ?>
@@ -382,22 +393,23 @@ $baseQuery = http_build_query(array_filter([
           <script>
           (function () {
             var picker    = document.getElementById('classGroupPicker');
-            var applyBtn  = document.getElementById('applyGroupBtn');
             var appendBtn = document.getElementById('appendGroupBtn');
             var textarea  = document.getElementById('studentCodesTextarea');
+            var groupIdInput = document.getElementById('selectedGroupId');
             if (!picker || !textarea) return;
-            if (applyBtn) {
-              applyBtn.addEventListener('click', function () {
-                var raw = picker.value; if (!raw) return;
-                textarea.value = raw; textarea.focus();
-              });
-            }
+            picker.addEventListener('change', function () {
+              var raw = picker.value; if (!raw) return;
+              textarea.value = raw; textarea.focus();
+              if (groupIdInput) groupIdInput.value = picker.options[picker.selectedIndex].dataset.gid || '';
+            });
             if (appendBtn) {
               appendBtn.addEventListener('click', function () {
                 var raw = picker.value; if (!raw) return;
                 var existing = textarea.value;
                 textarea.value = existing === '' ? raw : (existing.trimEnd() + '\n' + raw);
                 textarea.focus();
+                // clear group association when appending multiple groups
+                if (groupIdInput) groupIdInput.value = '';
               });
             }
           })();
