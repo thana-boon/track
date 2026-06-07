@@ -122,6 +122,14 @@ switch ($route) {
     case 'class-room-student':
         require __DIR__ . '/app/routes/class_room_student.php';
         break;
+    case 'class_room_print':
+    case 'class-room-print':
+        require __DIR__ . '/app/routes/class_room_print.php';
+        break;
+    case 'class_room_export':
+    case 'class-room-export':
+        require __DIR__ . '/app/routes/class_room_export.php';
+        break;
     case 'class_attendance':
     case 'class-attendance':
         require __DIR__ . '/app/routes/class_attendance.php';

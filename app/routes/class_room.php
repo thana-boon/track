@@ -168,6 +168,7 @@ if ($yearId > 0 && $selectedLevel !== '' && $selectedRoom > 0) {
         . 'SUM(CASE WHEN cs.attend_status IS NULL THEN 1 ELSE 0 END) AS pending_count, '
         . 'SUM(CASE WHEN cs.result_status = \'pass\' THEN 1 ELSE 0 END) AS pass_count, '
         . 'SUM(CASE WHEN cs.result_status = \'fail\' THEN 1 ELSE 0 END) AS fail_count, '
+        . 'SUM(CASE WHEN cs.result_status = \'excellent\' THEN 1 ELSE 0 END) AS excellent_count, '
         . 'SUM(CASE WHEN cs.result_status = \'pending\' THEN 1 ELSE 0 END) AS res_pending_count '
         . 'FROM track_class_sessions sess '
         . 'JOIN track_class_students cs ON cs.session_id = sess.id '
@@ -189,6 +190,7 @@ if ($yearId > 0 && $selectedLevel !== '' && $selectedRoom > 0) {
 
         $pass = (int)($row['pass_count'] ?? 0);
         $fail = (int)($row['fail_count'] ?? 0);
+        $excellent = (int)($row['excellent_count'] ?? 0);
 
         $status = 'pending';
         if ($absent > 0) $status = 'absent';
@@ -196,6 +198,7 @@ if ($yearId > 0 && $selectedLevel !== '' && $selectedRoom > 0) {
 
         $resStatus = 'pending';
         if ($fail > 0) $resStatus = 'fail';
+        else if ($excellent > 0) $resStatus = 'excellent';
         else if ($pass > 0) $resStatus = 'pass';
 
         $dailyMap[$code][$d] = ['attend' => $status, 'result' => $resStatus];

@@ -76,6 +76,7 @@ $stmt = $pdoApp->prepare(
     'SELECT subj.id AS subject_id, subj.title AS subject_title, '
     . 'MAX(CASE WHEN cs.result_status = \'pass\' THEN 1 ELSE 0 END) AS has_pass, '
     . 'MAX(CASE WHEN cs.result_status = \'fail\' THEN 1 ELSE 0 END) AS has_fail, '
+    . 'MAX(CASE WHEN cs.result_status = \'excellent\' THEN 1 ELSE 0 END) AS has_excellent, '
     . 'MAX(sess.session_date) AS last_date '
     . 'FROM track_class_students cs '
     . 'JOIN track_class_sessions sess ON sess.id = cs.session_id '
@@ -87,14 +88,17 @@ $stmt = $pdoApp->prepare(
 $stmt->execute([$yearId, $term, $studentCode]);
 $rows = $stmt->fetchAll();
 
+$excellent = [];
 $passed = [];
 $failed = [];
 $pending = [];
 foreach ($rows as $r) {
     $hasPass = (int)($r['has_pass'] ?? 0) === 1;
     $hasFail = (int)($r['has_fail'] ?? 0) === 1;
-    if ($hasPass) $passed[] = $r;
-    else if ($hasFail) $failed[] = $r;
+    $hasExcellent = (int)($r['has_excellent'] ?? 0) === 1;
+    if ($hasFail) $failed[] = $r;
+    else if ($hasExcellent) $excellent[] = $r;
+    else if ($hasPass) $passed[] = $r;
     else $pending[] = $r;
 }
 
@@ -103,6 +107,7 @@ echo render('class_room/student', [
     'student' => $student,
     'yearId' => $yearId,
     'term' => $term,
+    'excellent' => $excellent,
     'passed' => $passed,
     'failed' => $failed,
     'pending' => $pending,

@@ -76,10 +76,57 @@ $baseQuery = [
           <div class="text-xs text-ink-800/60">แสดงเฉพาะห้องที่ครูประจำชั้นรับผิดชอบ</div>
         <?php endif; ?>
 
-        <div class="flex items-center gap-2">
-          <label class="text-xs font-medium text-ink-800/70">เดือน</label>
-          <input type="month" value="<?= e($ym) ?>" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="location.href='<?= e((string)$basePath) ?>?'+new URLSearchParams({year_id:'<?= (int)$yearId ?>',term:'<?= (int)$term ?>',class_level:'<?= e($selectedLevel) ?>',class_room:'<?= (int)$selectedRoom ?>',ym:this.value}).toString()" />
+        <?php
+          // Thai month/year selector setup
+          $ymParts   = explode('-', $ym);
+          $ymCeYear  = (int)($ymParts[0] ?? date('Y'));
+          $ymMonth   = (int)($ymParts[1] ?? date('n'));
+          $crMonths  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+          $crYears   = range((int)date('Y') - 2, (int)date('Y') + 1);
+        ?>
+        <div class="flex items-center gap-1">
+          <select id="crMonthSel" onchange="crGoYm(this.value, document.getElementById('crYearSel').value)"
+            class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
+            <?php for ($m = 1; $m <= 12; $m++): ?>
+              <option value="<?= str_pad((string)$m, 2, '0', STR_PAD_LEFT) ?>" <?= $m === $ymMonth ? 'selected' : '' ?>><?= e($crMonths[$m - 1]) ?></option>
+            <?php endfor; ?>
+          </select>
+          <select id="crYearSel" onchange="crGoYm(document.getElementById('crMonthSel').value, this.value)"
+            class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
+            <?php foreach ($crYears as $ceY): ?>
+              <option value="<?= $ceY ?>" <?= $ceY === $ymCeYear ? 'selected' : '' ?>><?= $ceY + 543 ?></option>
+            <?php endforeach; ?>
+          </select>
         </div>
+        <script>
+        function crGoYm(m, y) {
+          location.href = '<?= e((string)$basePath) ?>?' + new URLSearchParams({
+            year_id: '<?= (int)$yearId ?>', term: '<?= (int)$term ?>',
+            class_level: '<?= e($selectedLevel) ?>', class_room: '<?= (int)$selectedRoom ?>',
+            ym: y + '-' + m
+          }).toString();
+        }
+        </script>
+
+        <?php
+          $printQs = http_build_query(array_filter([
+            'year_id'     => $yearId,
+            'term'        => $term,
+            'class_level' => $selectedLevel,
+            'class_room'  => $selectedRoom,
+            'ym'          => $ym,
+          ], static fn($v) => $v !== '' && $v !== 0));
+          $printHref  = '/tracks/class_room_print'  . ($printQs !== '' ? '?' . $printQs : '');
+          $exportHref = '/tracks/class_room_export' . ($printQs !== '' ? '?' . $printQs : '');
+        ?>
+        <a href="<?= e($printHref) ?>"
+           class="inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5">
+          🖨️ ดู PDF
+        </a>
+        <a href="<?= e($exportHref) ?>"
+           class="inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5">
+          📊 Export Excel
+        </a>
       </div>
     </div>
 
@@ -175,6 +222,7 @@ $baseQuery = [
                     $resCls = 'bg-sand-100 text-ink-800/70 ring-1 ring-black/5';
                     if ($resStatus === 'pass') { $resCell = 'ผ่าน'; $resCls = 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200'; }
                     if ($resStatus === 'fail') { $resCell = 'ไม่ผ่าน'; $resCls = 'bg-red-50 text-red-900 ring-1 ring-red-200'; }
+                    if ($resStatus === 'excellent') { $resCell = 'ยอดเยี่ยม'; $resCls = 'bg-amber-50 text-amber-900 ring-1 ring-amber-200'; }
                   ?>
                   <td class="px-2 py-3 text-center">
                     <span class="inline-flex min-w-[44px] justify-center rounded-full px-2 py-1 text-[11px] <?= $attCls ?>"><?= e($attCell) ?></span>
@@ -199,8 +247,8 @@ $baseQuery = [
         </table>
       </div>
 
-      <div class="border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60">
-        สถานะต่อวัน: เข้าเรียน “มา/ขาด/—” (รวมทุกวิชาในวันนั้น) • ผลการเรียน “ผ่าน/ไม่ผ่าน/—” (รวมทุกวิชาในวันนั้น)
+      <div class=”border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60”>
+        สถานะต่อวัน: เข้าเรียน “มา/ขาด/—“ (รวมทุกวิชาในวันนั้น) • ผลการเรียน “ยอดเยี่ยม/ผ่าน/ไม่ผ่าน/—“ (รวมทุกวิชาในวันนั้น)
       </div>
     </div>
   </section>

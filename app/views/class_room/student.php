@@ -1,5 +1,6 @@
 <?php
 $student = $student ?? null;
+$excellent = $excellent ?? [];
 $passed = $passed ?? [];
 $failed = $failed ?? [];
 $pending = $pending ?? [];
@@ -28,7 +29,22 @@ if ($no !== '') $titleLine = $no . '. ' . $titleLine;
       </div>
     </div>
 
-    <div class="mt-4 grid gap-4 md:grid-cols-3">
+    <div class="mt-4 grid gap-4 md:grid-cols-4">
+      <div class="rounded-3xl border border-black/5 bg-white/80 p-4">
+        <div class="text-sm font-semibold">⭐ ยอดเยี่ยม</div>
+        <div class="mt-2 space-y-2">
+          <?php foreach ($excellent as $r): ?>
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+              <div class="font-medium"><?= e((string)($r['subject_title'] ?? '')) ?></div>
+              <div class="text-xs text-amber-900/80">ล่าสุด: <?= e((string)($r['last_date'] ?? '')) ?></div>
+            </div>
+          <?php endforeach; ?>
+          <?php if (empty($excellent)): ?>
+            <div class="text-sm text-ink-800/60">— ยังไม่มีวิชาที่ยอดเยี่ยม</div>
+          <?php endif; ?>
+        </div>
+      </div>
+
       <div class="rounded-3xl border border-black/5 bg-white/80 p-4">
         <div class="text-sm font-semibold">🟢 ผ่าน</div>
         <div class="mt-2 space-y-2">
