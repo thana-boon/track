@@ -73,7 +73,7 @@ $totalCols = $fixedCols + count($columns);
     .head-right div { line-height: 1.6; }
 
     /* Table */
-    .tbl { width: 100%; border-collapse: collapse; font-size: 8pt; }
+    .tbl { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8pt; }
     .tbl th {
       background: #e6e6e6;
       border: 0.4pt solid #888;
@@ -94,31 +94,31 @@ $totalCols = $fixedCols + count($columns);
     .tbl tbody tr:nth-child(even) td.ns   { background: #c8c8c8; }
 
     /* Fixed columns */
-    .col-no   { width: 7mm; }
-    .col-name { width: 52mm; text-align: left !important; }
-    .col-room { width: 12mm; }
-    .col-code { width: 16mm; font-size: 7.5pt; }
+    .col-no   { width: 5mm; }
+    .col-name { width: 44mm; text-align: left !important; }
+    .col-room { width: 10mm; }
+    .col-code { width: 12mm; font-size: 7.5pt; }
+    td.col-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Column header: date on top, subject below */
-    .col-hdr {
-      padding: 1.5mm 1mm !important;
-      vertical-align: middle !important;
-      width: 18mm;
-      max-width: 18mm;
-      line-height: 1.3;
+    /* Column header: rotated, date + subject stacked */
+    .col-hdr { padding: 0 !important; }
+    .col-hdr-wrap { height: 42mm; width: 100%; position: relative; overflow: hidden; }
+    .col-hdr-inner {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 40mm;
+      transform: translate(-50%, -50%) rotate(-90deg);
+      text-align: left;
     }
-    .col-hdr-date { font-size: 7.5pt; font-weight: 700; white-space: nowrap; }
-    .col-hdr-subj { font-size: 6pt; font-weight: 500; color: #222; word-break: break-all; white-space: normal; margin-top: 0.5mm; }
+    .col-hdr-date { font-size: 7.5pt; font-weight: 700; display: block; line-height: 1.4; white-space: nowrap; }
+    .col-hdr-subj { font-size: 6.5pt; display: block; line-height: 1.4; margin-top: 1pt; white-space: normal; word-break: break-all; }
 
     /* No-session */
     .ns { background: #d0d0d0 !important; }
 
-    /* Result badges */
-    .res { display: inline-block; border-radius: 8pt; padding: 0 3pt; line-height: 1.5; font-size: 7.5pt; }
-    .r-excellent { background: #fef3c7; color: #92400e; }
-    .r-pass      { background: #d1fae5; color: #065f46; }
-    .r-fail      { background: #fee2e2; color: #991b1b; }
-    .r-pending   { color: #aaa; font-size: 7pt; }
+    /* Result text (no background) */
+    .res { font-size: 7.5pt; line-height: 1.5; }
+    .r-pending { color: #bbb; font-size: 7pt; }
 
     /* Room separator row */
     .room-sep td {
@@ -141,7 +141,10 @@ $totalCols = $fixedCols + count($columns);
 
     /* Screen only */
     .no-print { margin-top: 8mm; padding-top: 4mm; border-top: 1pt dashed #ccc; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    @media print { .no-print { display: none !important; } }
+    @media print {
+      .no-print { display: none !important; }
+      tbody + tbody { break-before: page !important; }
+    }
   </style>
 </head>
 <body>
@@ -193,37 +196,45 @@ $totalCols = $fixedCols + count($columns);
             $yr        = $ts !== false ? (int)date('Y', $ts) + 543 : 0;
             $dlbl      = $day . ' ' . ($thaiMonthsShort[$mo] ?? '') . ' ' . $yr;
             $subj      = (string)($col['subject_title'] ?? '');
-            $subjShort = mb_strlen($subj) > 14 ? mb_substr($subj, 0, 13) . '…' : $subj;
           ?>
           <th class="col-hdr">
-            <div class="col-hdr-date"><?= e($dlbl) ?></div>
-            <div class="col-hdr-subj" title="<?= e($subj) ?>"><?= e($subjShort) ?></div>
+            <div class="col-hdr-wrap">
+              <div class="col-hdr-inner">
+                <span class="col-hdr-date"><?= e($dlbl) ?></span>
+                <span class="col-hdr-subj"><?= e($subj) ?></span>
+              </div>
+            </div>
           </th>
         <?php endforeach; ?>
       </tr>
     </thead>
 
-    <tbody>
-      <?php
-        $prevRoomKey = null;
-        $roomRowNum  = 0;
-        $globalNum   = 0;
-        foreach ($allStudents as $st):
-          $code     = (string)($st['student_code'] ?? '');
-          $name     = trim((string)($st['first_name'] ?? '') . ' ' . (string)($st['last_name'] ?? ''));
-          $no       = (string)($st['number_in_room'] ?? '');
-          $roomKey  = (string)($st['room_key'] ?? '');
-          $globalNum++;
+    <?php
+    $prevRoomKey = null;
+    $roomRowNum  = 0;
+    $globalNum   = 0;
+    $tbodyOpen   = false;
 
-          if ($isMultiRoom && $roomKey !== $prevRoomKey):
-            $prevRoomKey = $roomKey;
-            $roomRowNum  = 0;
-      ?>
-        <tr class="room-sep">
-          <td colspan="<?= $totalCols ?>">ห้อง <?= e($roomKey) ?></td>
-        </tr>
-      <?php endif; $roomRowNum++; ?>
+    foreach ($allStudents as $st) {
+        $code    = (string)($st['student_code'] ?? '');
+        $name    = trim((string)($st['first_name'] ?? '') . ' ' . (string)($st['last_name'] ?? ''));
+        $no      = (string)($st['number_in_room'] ?? '');
+        $roomKey = (string)($st['room_key'] ?? '');
+        $globalNum++;
 
+        $isNewRoom = ($isMultiRoom && $roomKey !== $prevRoomKey);
+        if ($isNewRoom || !$tbodyOpen) {
+            if ($tbodyOpen) { echo '</tbody>'; }
+            echo '<tbody>';
+            $tbodyOpen = true;
+            if ($isNewRoom) {
+                $prevRoomKey = $roomKey;
+                $roomRowNum  = 0;
+                echo '<tr class="room-sep"><td colspan="' . $totalCols . '">ห้อง ' . e($roomKey) . '</td></tr>';
+            }
+        }
+        $roomRowNum++;
+    ?>
       <tr>
         <td class="col-no"><?= e($no !== '' ? $no : (string)$roomRowNum) ?></td>
         <td class="col-name"><?= e($name !== '' ? $name : $code) ?></td>
@@ -239,34 +250,27 @@ $totalCols = $fixedCols + count($columns);
             <td class="ns"></td>
           <?php else: ?>
             <td>
-              <?php if ($result === 'excellent'): ?>
-                <span class="res r-excellent">ยอดเยี่ยม</span>
-              <?php elseif ($result === 'pass'): ?>
-                <span class="res r-pass">ผ่าน</span>
-              <?php elseif ($result === 'fail'): ?>
-                <span class="res r-fail">ไม่ผ่าน</span>
-              <?php else: ?>
-                <span class="res r-pending">รอประเมิน</span>
+              <?php if ($result === 'excellent'): ?><span class="res">ยอดเยี่ยม</span>
+              <?php elseif ($result === 'pass'): ?><span class="res">ผ่าน</span>
+              <?php elseif ($result === 'fail'): ?><span class="res">ไม่ผ่าน</span>
+              <?php else: ?><span class="res r-pending">รอประเมิน</span>
               <?php endif; ?>
             </td>
           <?php endif; ?>
         <?php endforeach; ?>
       </tr>
+    <?php } ?>
 
-      <?php endforeach; ?>
-
-      <?php if (empty($allStudents)): ?>
-        <tr><td colspan="<?= $totalCols ?>" style="text-align:center; padding:8mm; color:#666;">ไม่พบนักเรียน</td></tr>
-      <?php endif; ?>
+    <?php if (!$tbodyOpen) { echo '<tbody>'; } ?>
+    <?php if (empty($allStudents)): ?>
+      <tr><td colspan="<?= $totalCols ?>" style="text-align:center;padding:8mm;color:#666;">ไม่พบนักเรียน</td></tr>
+    <?php endif; ?>
     </tbody>
   </table>
 
   <div class="legend">
     <span class="ns-box"></span> ไม่มีคาบเรียน &nbsp;|&nbsp;
-    <span class="res r-excellent">ยอดเยี่ยม</span>
-    <span class="res r-pass">ผ่าน</span>
-    <span class="res r-fail">ไม่ผ่าน</span>
-    <span class="res r-pending">รอประเมิน</span>
+    ยอดเยี่ยม &nbsp;/&nbsp; ผ่าน &nbsp;/&nbsp; ไม่ผ่าน &nbsp;/&nbsp; <span class="r-pending">รอประเมิน</span>
   </div>
 
   <div class="sign-area">

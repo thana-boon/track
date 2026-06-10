@@ -64,6 +64,7 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'morning[\']').forEach(function(el){el.value='1';});})();">🌅 มาเช้าทั้งหมด</button>
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'afternoon[\']').forEach(function(el){el.value='1';});})();">🌇 มาบ่ายทั้งหมด</button>
+          <button type="button" class="rounded-2xl bg-teal-600 px-3 py-2 text-sm font-medium text-white hover:bg-teal-700" onclick="autoEvalResults()">🎯 ประเมินผลอัตโนมัติ</button>
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'result[\']').forEach(function(el){el.value='excellent';});})();">⭐ ยอดเยี่ยมทั้งหมด</button>
           <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm hover:bg-black/5" onclick="(function(){document.querySelectorAll('select[name^=\'result[\']').forEach(function(el){el.value='pass';});})();">🟢 ผ่านทั้งหมด</button>
           <button class="rounded-2xl bg-calm-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 บันทึก</button>
@@ -137,6 +138,30 @@ $printHref = '/tracks/class_attendance_print?id=' . $sessionId . '&cols=6';
     </form>
 
     <script>
+      function autoEvalResults() {
+        var form = document.getElementById('attendanceForm');
+        if (!form) return;
+        var cssEsc = (window.CSS && typeof CSS.escape === 'function')
+          ? CSS.escape
+          : function(s) { return String(s).replace(/[^a-zA-Z0-9_\-]/g, '\\$&'); };
+        var results = Array.prototype.slice.call(form.querySelectorAll("select[name^='result[']"));
+        var changed = 0;
+        results.forEach(function(resEl) {
+          var m = String(resEl.name || '').match(/^result\[(.+)\]$/);
+          if (!m) return;
+          var code = m[1];
+          var mEl = form.querySelector("select[name='morning[" + cssEsc(code) + "]']");
+          var aEl = form.querySelector("select[name='afternoon[" + cssEsc(code) + "]']");
+          var mCame = mEl && mEl.value === '1';
+          var aCame = aEl && aEl.value === '1';
+          var newVal = (mCame && aCame) ? 'excellent' : (mCame || aCame) ? 'pass' : 'fail';
+          if (resEl.value !== newVal) { resEl.value = newVal; changed++; }
+        });
+        if (changed === 0 && typeof Swal !== 'undefined') {
+          Swal.fire({ title: 'ไม่มีการเปลี่ยนแปลง', text: 'ผลทุกคนตรงกับการเข้าเรียนอยู่แล้ว', icon: 'info', confirmButtonText: 'ตกลง' });
+        }
+      }
+
       (function () {
         var form = document.getElementById('attendanceForm');
         if (!form) return;
