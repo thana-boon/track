@@ -128,7 +128,7 @@ function track_class_session_create(int $yearId, int $term, int $subjectId, stri
 
     $note = trim($note);
 
-    $studentCodes = array_values(array_unique(array_filter(array_map('trim', array_map('strval', $studentCodes)), static fn($v) => $v !== '')));
+    $studentCodes = array_values(array_unique(array_filter(array_map('student_code_normalize', $studentCodes), static fn($v) => $v !== '')));
     if (count($studentCodes) === 0) {
         throw new RuntimeException('กรุณาเลือกนักเรียนอย่างน้อย 1 คน');
     }
@@ -481,7 +481,7 @@ function track_class_session_update(int $sessionId, int $subjectId, string $sess
 
     $note = trim($note);
 
-    $studentCodes = array_values(array_unique(array_filter(array_map('trim', array_map('strval', $studentCodes)), static fn($v) => $v !== '')));
+    $studentCodes = array_values(array_unique(array_filter(array_map('student_code_normalize', $studentCodes), static fn($v) => $v !== '')));
     if (count($studentCodes) === 0) {
         throw new RuntimeException('กรุณาเลือกนักเรียนอย่างน้อย 1 คน');
     }

@@ -127,7 +127,7 @@ if (is_array($activeYear)) {
       </div>
 
       <div class="border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60">
-        แหล่งข้อมูล: <span class="font-mono">school_app.academic_years</span>
+        แหล่งข้อมูล: <span class="font-mono"><?= e(DB_SCHOOL) ?>.academic_years</span>
       </div>
     </div>
   </div>

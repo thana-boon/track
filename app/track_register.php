@@ -97,7 +97,7 @@ function track_reg_assign_bulk_for_term(int $yearId, int $term, int $subjectId, 
         $resultStatus = 'registered';
     }
 
-    $studentCodes = array_values(array_unique(array_filter(array_map('trim', $studentCodes), static fn($v) => $v !== '')));
+    $studentCodes = array_values(array_unique(array_filter(array_map('student_code_normalize', $studentCodes), static fn($v) => $v !== '')));
     if (count($studentCodes) === 0) {
         throw new RuntimeException('กรุณาเลือกนักเรียน');
     }
@@ -143,7 +143,7 @@ function track_reg_unassign_bulk_for_term(int $yearId, int $term, int $subjectId
     $term = (int)$term;
     $term = ($term === 2) ? 2 : 1;
 
-    $studentCodes = array_values(array_unique(array_filter(array_map('trim', $studentCodes), static fn($v) => $v !== '')));
+    $studentCodes = array_values(array_unique(array_filter(array_map('student_code_normalize', $studentCodes), static fn($v) => $v !== '')));
     if (count($studentCodes) === 0) {
         throw new RuntimeException('กรุณาเลือกนักเรียน');
     }
@@ -173,7 +173,7 @@ function track_reg_delete_by_id(int $id): void
 /** @return array<string, mixed>|null */
 function school_student_get(int $yearId, string $studentCode): ?array
 {
-    $studentCode = trim($studentCode);
+    $studentCode = student_code_normalize($studentCode);
     if ($yearId <= 0 || $studentCode === '') {
         return null;
     }
@@ -188,7 +188,7 @@ function school_student_get(int $yearId, string $studentCode): ?array
 /** @return array<string, mixed>|null */
 function school_student_get_any_year(string $studentCode): ?array
 {
-    $studentCode = trim($studentCode);
+    $studentCode = student_code_normalize($studentCode);
     if ($studentCode === '') {
         return null;
     }

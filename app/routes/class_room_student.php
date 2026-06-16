@@ -38,6 +38,7 @@ $returnHref = '/tracks/class_room' . ($returnQs !== '' ? ('?' . $returnQs) : '')
 
 // Load student + role guard
 $student = null;
+$studentCode = student_code_normalize($studentCode);
 if ($yearId > 0 && $studentCode !== '') {
     $stmt = $pdoSchool->prepare('SELECT student_code, first_name, last_name, class_level, class_room, number_in_room FROM students WHERE year_id = ? AND student_code = ? LIMIT 1');
     $stmt->execute([$yearId, $studentCode]);

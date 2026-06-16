@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // normalize + de-duplicate (preserve first-seen order)
             $uniq = [];
             foreach ($codes as $c) {
-                $c = trim((string)$c);
+                $c = student_code_normalize($c);
                 if ($c === '') {
                     continue;
                 }

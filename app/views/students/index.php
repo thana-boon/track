@@ -102,7 +102,7 @@ $term = ($term === 2) ? 2 : 1;
     </div>
 
     <div class="mt-3 text-xs text-ink-800/60">
-      แหล่งข้อมูล: <span class="font-mono">school_app.academic_years</span> และ <span class="font-mono">school_app.students</span>
+      แหล่งข้อมูล: <span class="font-mono"><?= e(DB_SCHOOL) ?>.academic_years</span> และ <span class="font-mono"><?= e(DB_SCHOOL) ?>.students</span>
     </div>
   </section>
 </div>

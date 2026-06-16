@@ -6,6 +6,20 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/**
+ * Normalize a student code to the 5-digit zero-padded format used by students_db.
+ * - Pure-digit codes shorter than 5 chars are left-padded with '0' (e.g. "3167" -> "03167").
+ * - Codes already 5+ chars, or containing non-digits, are returned trimmed as-is.
+ */
+function student_code_normalize(mixed $code): string
+{
+    $code = trim((string)$code);
+    if ($code !== '' && ctype_digit($code) && strlen($code) < 5) {
+        return str_pad($code, 5, '0', STR_PAD_LEFT);
+    }
+    return $code;
+}
+
 function redirect(string $route = ''): never
 {
     $url = '/tracks/';
