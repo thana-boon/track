@@ -131,6 +131,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'sync_teachers') {
+            $me = auth_user();
+            if (!$me || (string)($me['role'] ?? '') !== 'admin') {
+                throw new RuntimeException('เฉพาะ admin เท่านั้นที่ซิงค์ครูจาก API ได้');
+            }
+            if (!timetable_api_configured()) {
+                throw new RuntimeException('ยังไม่ได้ตั้งค่า TIMETABLE_API_BASE / TIMETABLE_API_KEY ใน .env');
+            }
+
+            $res = timetable_api_teachers();
+            if (!$res['ok']) {
+                throw new RuntimeException($res['error']);
+            }
+
+            $stats = timetable_api_sync_users($res['teachers']);
+            flash_set('success', "ซิงค์ครูจาก API สำเร็จ: เพิ่ม {$stats['created']} • อัปเดต {$stats['updated']} • ลบ {$stats['deleted']}");
+            header('Location: ' . $back);
+            exit;
+        }
+
         if ($action === 'import') {
             $importText = trim(input_string('import_text'));
             $defaultRole = strtolower(trim(input_string('default_role')));
@@ -314,7 +334,7 @@ if ($page > $totalPages) {
 $offset = ($page - 1) * $pageSize;
 
 $stmtList = $pdo->prepare(
-    'SELECT id, username, displayname, role, created_at '
+    'SELECT id, username, displayname, role, auth_source, created_at '
     . 'FROM users '
     . $sqlWhere . ' '
     . 'ORDER BY username ASC '

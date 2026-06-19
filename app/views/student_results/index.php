@@ -3,6 +3,7 @@ $student = $student ?? null;
 $subjects = $subjects ?? [];
 $summary = $summary ?? ['assigned_total' => 0, 'passed_total' => 0, 'passed_titles' => [], 'missing_titles' => []];
 $years = is_array($years ?? null) ? $years : [];
+$terms = is_array($terms ?? null) && !empty($terms) ? array_map('intval', $terms) : [1, 2];
 
 $yearId = (int)($yearId ?? 0);
 $term = (int)($term ?? 1);
@@ -42,8 +43,9 @@ $noText = $student ? (string)$student['number_in_room'] : '';
           <div>
             <div class="text-xs font-medium text-ink-800/70">เทอม</div>
             <select name="term" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="this.form.submit()">
-              <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
-              <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
+              <?php foreach ($terms as $t): ?>
+                <option value="<?= (int)$t ?>" <?= $term === (int)$t ? 'selected' : '' ?>>เทอม <?= (int)$t ?></option>
+              <?php endforeach; ?>
             </select>
           </div>
         </div>
@@ -54,7 +56,7 @@ $noText = $student ? (string)$student['number_in_room'] : '';
       <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
     <?php endif; ?>
 
-    <div class="mt-4 grid gap-3 md:grid-cols-3">
+    <div class="mt-4 grid gap-3 md:grid-cols-2">
       <div class="rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4">
         <div class="text-xs text-ink-800/60">นักเรียน</div>
         <div class="mt-1 text-base font-semibold"><?= e($name !== '' ? $name : '—') ?></div>
@@ -65,24 +67,6 @@ $noText = $student ? (string)$student['number_in_room'] : '';
         <div class="text-xs text-ink-800/60">สรุปการผ่าน</div>
         <div class="mt-1 text-2xl font-semibold"><?= (int)($summary['passed_total'] ?? 0) ?> / <?= (int)($summary['assigned_total'] ?? 0) ?></div>
         <div class="mt-1 text-xs text-ink-800/60">ผ่านแล้ว / วิชาที่ถูกกำหนดทั้งหมด</div>
-      </div>
-
-      <div class="rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-lilac/25 p-4">
-        <div class="text-xs text-ink-800/60">ใบทรานสคริป</div>
-        <?php $assignedTotal = (int)($summary['assigned_total'] ?? 0); ?>
-        <?php $passedTotal = (int)($summary['passed_total'] ?? 0); ?>
-        <?php $canGraduate = $assignedTotal > 0 && $passedTotal >= $assignedTotal; ?>
-
-        <?php if ($assignedTotal === 0): ?>
-          <div class="mt-1 text-base font-semibold text-ink-900">ยังไม่มีข้อมูล</div>
-          <div class="mt-1 text-xs text-ink-800/60">ยังไม่มีวิชาที่ถูกกำหนดในระบบ</div>
-        <?php elseif ($canGraduate): ?>
-          <div class="mt-1 text-base font-semibold text-emerald-700">ผ่านครบตามที่ถูกกำหนด ✅</div>
-          <div class="mt-1 text-xs text-ink-800/60">(สถานะจากข้อมูลที่มีในระบบ)</div>
-        <?php else: ?>
-          <div class="mt-1 text-base font-semibold text-red-700">ยังจบไม่ได้ ❌</div>
-          <div class="mt-1 text-xs text-ink-800/60">ยังมีวิชาที่ไม่ผ่าน/รอดำเนินการ</div>
-        <?php endif; ?>
       </div>
     </div>
 
@@ -150,13 +134,6 @@ $noText = $student ? (string)$student['number_in_room'] : '';
         </div>
       </div>
     </div>
-
-    <?php if ((int)($summary['assigned_total'] ?? 0) > 0 && !$canGraduate): ?>
-      <div class="mt-4 rounded-3xl border border-red-200 bg-red-50 p-4">
-        <div class="text-sm font-semibold text-red-900">📄 ใบทรานสคริป: ยังจบไม่ได้</div>
-        <div class="mt-1 text-xs text-red-900/80">วิชาที่ยังไม่ผ่าน/รอดำเนินการ: <?= e(implode(', ', (array)($summary['missing_titles'] ?? []))) ?></div>
-      </div>
-    <?php endif; ?>
 
   </section>
 </div>

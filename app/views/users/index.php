@@ -97,6 +97,21 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
       </form>
     </div>
 
+    <form method="post" data-confirm="ซิงค์ครูจาก API? ระบบจะเพิ่ม/อัปเดตครู และลบครูที่ไม่มีใน API ออก (ไม่แตะ admin/ผู้ใช้ในเครื่อง)" class="mt-4 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-mint/20 p-5">
+      <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
+      <input type="hidden" name="action" value="sync_teachers" />
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold">🔄 ซิงค์ครูจาก API (timetable)</h2>
+          <p class="mt-1 text-xs text-ink-800/60">
+            ดึงรหัสครู + ชื่อ-นามสกุล มาเป็นผู้ใช้ (role = teacher เริ่มต้น • ปรับ role ได้ในตารางด้านล่าง)<br />
+            ครูที่ซิงค์มา login ด้วย <span class="font-mono">รหัสครู</span> + รหัสผ่านของระบบครู (ตรวจผ่าน API ตอน login — ไม่เก็บรหัสผ่านที่นี่)
+          </p>
+        </div>
+        <button class="inline-flex items-center justify-center rounded-2xl bg-calm-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">🔄 ซิงค์ตอนนี้</button>
+      </div>
+    </form>
+
     <form class="mt-6 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-mint/25 p-5 md:grid-cols-6" method="get" action="/tracks/users">
 
       <div class="md:col-span-3">
@@ -135,6 +150,7 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
             <th class="px-4 py-3">Username</th>
             <th class="px-4 py-3">Display name</th>
             <th class="px-4 py-3">Role</th>
+            <th class="px-4 py-3">เข้าสู่ระบบ</th>
             <th class="px-4 py-3">Created</th>
             <th class="px-4 py-3">Actions</th>
           </tr>
@@ -164,9 +180,20 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
                   <button form="<?= e($formId) ?>" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5">บันทึก</button>
                 </div>
               </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <?php $isTimetable = ((string)($u['auth_source'] ?? 'local') === 'timetable'); ?>
+                <?php if ($isTimetable): ?>
+                  <span class="inline-flex items-center rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-900 ring-1 ring-black/5">🔄 API ครู</span>
+                <?php else: ?>
+                  <span class="inline-flex items-center rounded-full bg-sand-100 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5">🔑 ในเครื่อง</span>
+                <?php endif; ?>
+              </td>
               <td class="px-4 py-3 text-xs text-ink-800/70 whitespace-nowrap"><?= e((string)$u['created_at']) ?></td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap items-center gap-2">
+                  <?php if ($isTimetable): ?>
+                    <span class="rounded-xl border border-black/10 bg-sand-50 px-3 py-2 text-xs text-ink-800/60">รหัสผ่านจัดการที่ระบบครู (API)</span>
+                  <?php else: ?>
                   <form method="post" class="flex items-center gap-2">
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                     <input type="hidden" name="action" value="reset_password" />
@@ -175,6 +202,7 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
                     <input type="password" name="confirm_new_password" placeholder="ยืนยัน" class="w-28 rounded-xl border border-black/10 bg-white px-3 py-2 text-xs outline-none focus:border-calm-500" />
                     <button class="rounded-xl bg-ink-900 px-3 py-2 text-xs font-medium text-white hover:bg-ink-800">🔁 ตั้งใหม่</button>
                   </form>
+                  <?php endif; ?>
 
                   <form method="post" data-confirm="ยืนยันลบผู้ใช้นี้?">
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
@@ -189,7 +217,7 @@ $to = $total > 0 ? min($total, $page * $pageSize) : 0;
 
           <?php if (empty($users)): ?>
             <tr>
-              <td colspan="5" class="px-4 py-8 text-center text-sm text-ink-800/70">ยังไม่มีผู้ใช้</td>
+              <td colspan="6" class="px-4 py-8 text-center text-sm text-ink-800/70">ยังไม่มีผู้ใช้</td>
             </tr>
           <?php endif; ?>
         </tbody>

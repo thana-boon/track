@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 require_auth();
 
+// Students get their own self-service page, not the admin dashboard.
+$me = auth_user();
+if (is_array($me) && (string)($me['role'] ?? '') === 'student') {
+    redirect('student_results');
+}
+
 $pdo = db_school();
 
 // Pick active academic year if exists; otherwise latest

@@ -18,6 +18,30 @@ $studentCode = trim((string)($me['username'] ?? ''));
 $pdoSchool = db_school();
 $years = $pdoSchool->query('SELECT id, year_be, title, is_active FROM academic_years ORDER BY year_be DESC')->fetchAll();
 
+// Determine which (year, term) combos this student actually has data for,
+// so the year/term dropdowns only offer the ones with records.
+$availTermsByYear = []; // year_id => [term => true]
+if ($studentCode !== '') {
+    $pdoAppAvail = db_app();
+    $availStmt = $pdoAppAvail->prepare('SELECT DISTINCT year_id, term FROM track_registrations WHERE student_code = ?');
+    $availStmt->execute([$studentCode]);
+    foreach ($availStmt->fetchAll() as $row) {
+        $yid = (int)($row['year_id'] ?? 0);
+        $t = ((int)($row['term'] ?? 1) === 2) ? 2 : 1;
+        if ($yid > 0) {
+            $availTermsByYear[$yid][$t] = true;
+        }
+    }
+}
+
+// Keep only years the student has data for (fallback to all years if none).
+if (!empty($availTermsByYear)) {
+    $years = array_values(array_filter(
+        $years,
+        static fn($y) => isset($availTermsByYear[(int)($y['id'] ?? 0)])
+    ));
+}
+
 $defaultYearId = 0;
 foreach ($years as $y) {
     if ((int)$y['is_active'] === 1) {
@@ -40,6 +64,14 @@ foreach ($years as $y) {
 }
 if (!$yearValid) {
     $yearId = $defaultYearId;
+}
+
+// Terms the student has data for in the selected year (fallback to both).
+$availTerms = array_keys($availTermsByYear[$yearId] ?? []);
+sort($availTerms);
+$terms = !empty($availTerms) ? array_map('intval', $availTerms) : [1, 2];
+if (!in_array($term, $terms, true)) {
+    $term = (int)$terms[0];
 }
 
 $yearText = '';
@@ -80,6 +112,7 @@ if ($yearId > 0 && $studentCode !== '') {
         . 'SUM(cs.attend_status = 0) AS attend_no, '
         . 'SUM(cs.attend_status IS NULL) AS attend_unknown, '
         . 'SUM(cs.result_status = \'pass\') AS pass_count, '
+        . 'SUM(cs.result_status = \'excellent\') AS excellent_count, '
         . 'SUM(cs.result_status = \'fail\') AS fail_count, '
         . 'SUM(cs.result_status = \'pending\') AS pending_count, '
         . 'MAX(sess.session_date) AS last_session_date, '
@@ -136,13 +169,18 @@ foreach ($assignedRegs as $r) {
     $attNo = (int)($stats['attend_no'] ?? 0);
 
     $passCount = (int)($stats['pass_count'] ?? 0);
+    $excellentCount = (int)($stats['excellent_count'] ?? 0);
     $failCount = (int)($stats['fail_count'] ?? 0);
 
-    $passed = $passCount > 0;
+    // "ยอดเยี่ยม" (excellent) นับเป็นผ่านด้วย
+    $passed = ($passCount + $excellentCount) > 0;
 
     $resultLabel = 'รอดำเนินการ';
     $resultTone = 'bg-sand-100/70 text-ink-900 ring-black/5';
-    if ($passed) {
+    if ($excellentCount > 0) {
+        $resultLabel = 'ยอดเยี่ยม';
+        $resultTone = 'bg-amber-50 text-amber-900 ring-amber-200';
+    } elseif ($passCount > 0) {
         $resultLabel = 'ผ่าน';
         $resultTone = 'bg-emerald-50 text-emerald-900 ring-emerald-200';
     } elseif ($failCount > 0) {
@@ -208,6 +246,7 @@ echo render('student_results/index', [
     'years' => $years,
     'yearId' => $yearId,
     'term' => $term,
+    'terms' => $terms,
     'yearText' => $yearText !== '' ? $yearText : (string)$yearId,
     'studentCode' => $studentCode,
     'student' => $student,

@@ -67,3 +67,12 @@ define('DB_APP',    env('DB_APP'));
 
 // School data DB (provided sample schema)
 define('DB_SCHOOL', env('DB_SCHOOL'));
+
+// ---- Timetable Auth API (teacher accounts source) ----
+// Base URL of the timetable-auth-api service, e.g. http://localhost:4001
+define('TIMETABLE_API_BASE', rtrim((string) env('TIMETABLE_API_BASE', ''), '/'));
+// API keys (tta_...). Each key holds one scope:
+//   TIMETABLE_API_KEY       -> scope teachers:read  (used for sync)
+//   TIMETABLE_API_KEY_LOGIN -> scope auth:login     (used for teacher login; falls back to main key)
+define('TIMETABLE_API_KEY',       (string) env('TIMETABLE_API_KEY', ''));
+define('TIMETABLE_API_KEY_LOGIN', (string) env('TIMETABLE_API_KEY_LOGIN', ''));
