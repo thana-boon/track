@@ -35,34 +35,34 @@ if ($sessionDate !== '') {
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="card border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">📅 ตารางเรียน (ตามวัน)</h1>
-        <p class="mt-1 text-sm text-ink-800/70">เลือกวัน แล้วดูว่าวันนั้นมีเรียนอะไรบ้าง • กดเข้าไปเช็คชื่อได้</p>
+        <p class="mt-1 text-sm text-base-content/70">เลือกวัน แล้วดูว่าวันนั้นมีเรียนอะไรบ้าง • กดเข้าไปเช็คชื่อได้</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
         <?php $me = auth_user(); $role = (string)(is_array($me) ? ($me['role'] ?? 'teacher') : 'teacher'); ?>
         <?php if ($role === 'admin'): ?>
-          <a class="rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500" href="/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>">➕ สร้างรอบเรียน</a>
+          <a class="btn btn-neutral rounded-2xl" href="/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>">➕ สร้างรอบเรียน</a>
         <?php endif; ?>
       </div>
     </div>
 
     <?php if (!empty($success)): ?>
-      <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"><?= e((string)$success) ?></div>
+      <div role="alert" class="alert alert-success mt-4 text-sm"><span><?= e((string)$success) ?></span></div>
     <?php endif; ?>
 
     <?php if (!empty($error)): ?>
-      <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
+      <div role="alert" class="alert alert-error mt-4 text-sm"><span><?= e((string)$error) ?></span></div>
     <?php endif; ?>
 
-    <div class="mt-4 overflow-hidden rounded-3xl border border-black/5 bg-white/80">
-      <div class="flex flex-wrap items-center justify-between gap-2 bg-sand-100 px-4 py-3">
+    <div class="mt-4 overflow-hidden rounded-2xl border border-base-300 bg-base-100">
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-base-200 px-4 py-3">
         <div class="flex flex-wrap items-center gap-2">
-          <label class="text-xs font-medium text-ink-800/70">ปีการศึกษา</label>
-          <select id="attYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attYear'); var t=document.getElementById('attTerm'); if(!y||!t) return; location.href='/tracks/class_attendance?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
+          <label class="text-xs font-medium text-base-content/70">ปีการศึกษา</label>
+          <select id="attYear" class="select select-bordered select-sm" onchange="(function(){var y=document.getElementById('attYear'); var t=document.getElementById('attTerm'); if(!y||!t) return; location.href='/tracks/class_attendance?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
             <?php foreach (($years ?? []) as $y): ?>
               <?php
                 $id = (int)($y['id'] ?? 0);
@@ -73,15 +73,15 @@ if ($sessionDate !== '') {
             <?php endforeach; ?>
           </select>
 
-          <label class="text-xs font-medium text-ink-800/70">เทอม</label>
-          <select id="attTerm" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attYear'); var t=document.getElementById('attTerm'); if(!y||!t) return; location.href='/tracks/class_attendance?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
+          <label class="text-xs font-medium text-base-content/70">เทอม</label>
+          <select id="attTerm" class="select select-bordered select-sm" onchange="(function(){var y=document.getElementById('attYear'); var t=document.getElementById('attTerm'); if(!y||!t) return; location.href='/tracks/class_attendance?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
             <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
             <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
           </select>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <label class="text-xs font-medium text-ink-800/70">เดือน</label>
+          <label class="text-xs font-medium text-base-content/70">เดือน</label>
           <?php
             $curYear  = (int)substr($sessionDate, 0, 4);
             $curMonth = (int)substr($sessionDate, 5, 2);
@@ -91,7 +91,7 @@ if ($sessionDate !== '') {
               9=>'กันยายน',10=>'ตุลาคม',11=>'พฤศจิกายน',12=>'ธันวาคม',
             ];
           ?>
-          <select id="attMonth" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500"
+          <select id="attMonth" class="select select-bordered select-sm"
             onchange="(function(){
               var m=document.getElementById('attMonth');
               var yr=document.getElementById('attMonthYear');
@@ -103,7 +103,7 @@ if ($sessionDate !== '') {
               <option value="<?= $mn ?>" <?= $mn === $curMonth ? 'selected' : '' ?>><?= $mLabel ?></option>
             <?php endforeach; ?>
           </select>
-          <select id="attMonthYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500"
+          <select id="attMonthYear" class="select select-bordered select-sm"
             onchange="(function(){
               var m=document.getElementById('attMonth');
               var yr=document.getElementById('attMonthYear');
@@ -118,8 +118,8 @@ if ($sessionDate !== '') {
         </div>
       </div>
 
-      <div class="border-t border-black/5 bg-white px-4 py-3">
-        <div class="text-xs text-ink-800/60">วันในเดือนนี้ที่มีรอบเรียน:</div>
+      <div class="border-t border-base-300 bg-base-100 px-4 py-3">
+        <div class="text-xs text-base-content/60">วันในเดือนนี้ที่มีรอบเรียน:</div>
         <div class="mt-2 flex flex-wrap gap-2">
           <?php foreach ($sessionDatesInMonth as $d): ?>
             <?php
@@ -128,18 +128,18 @@ if ($sessionDate !== '') {
               $active = ((string)$d === (string)$sessionDate);
               $href = '/tracks/class_attendance?year_id=' . (int)$yearId . '&term=' . (int)$term . '&session_date=' . urlencode((string)$d);
             ?>
-            <a class="inline-flex items-center rounded-full px-3 py-1 text-xs ring-1 ring-black/5 <?= $active ? 'bg-calm-600 text-white' : 'bg-sand-100 text-ink-900 hover:bg-black/5' ?>" href="<?= e($href) ?>"><?= $day > 0 ? (int)$day : e((string)$d) ?></a>
+            <a class="inline-flex items-center rounded-full px-3 py-1 text-xs ring-1 ring-base-300 <?= $active ? 'bg-neutral text-neutral-content' : 'bg-base-200 text-base-content hover:bg-base-300' ?>" href="<?= e($href) ?>"><?= $day > 0 ? (int)$day : e((string)$d) ?></a>
           <?php endforeach; ?>
 
           <?php if (empty($sessionDatesInMonth)): ?>
-            <span class="text-xs text-ink-800/60">— ยังไม่มีรอบเรียนในเดือนนี้</span>
+            <span class="text-xs text-base-content/60">— ยังไม่มีรอบเรียนในเดือนนี้</span>
           <?php endif; ?>
         </div>
       </div>
 
-      <div class="px-4 py-3 text-xs text-ink-800/60"><?= e(thai_date_long($sessionDate)) ?></div>
+      <div class="px-4 py-3 text-xs text-base-content/60"><?= e(thai_date_long($sessionDate)) ?></div>
 
-      <div class="divide-y divide-black/5 bg-white">
+      <div class="divide-y divide-base-300 bg-base-100">
             <?php foreach ($sessionsForDate as $sess): ?>
               <?php
                 $id = (int)($sess['id'] ?? 0);
@@ -157,33 +157,33 @@ if ($sessionDate !== '') {
                   . '&return_year=' . (int)$yearId
                   . '&return_date=' . urlencode((string)$sessionDate);
               ?>
-              <div class="px-4 py-4 hover:bg-sand-50">
+              <div class="px-4 py-4 transition hover:bg-base-200">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div class="min-w-0 flex-1">
                     <div class="font-medium text-sm"><?= e($subj) ?></div>
                     <?php if ($groupTitle !== ''): ?>
                       <div class="mt-1">
-                        <span class="inline-flex items-center rounded-full bg-pastel-mint/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5">📂 <?= e($groupTitle) ?></span>
+                        <span class="badge badge-sm border-none bg-primary/15 text-base-content/80">📂 <?= e($groupTitle) ?></span>
                       </div>
                     <?php endif; ?>
                     <div class="mt-1.5 flex flex-wrap items-center gap-2">
-                      <span class="inline-flex items-center rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= $count ?> คน</span>
+                      <span class="badge badge-sm border-none bg-secondary/15 text-base-content/80"><?= $count ?> คน</span>
                       <?php if ($note !== ''): ?>
-                        <span class="text-xs text-ink-800/60"><?= e($note) ?></span>
+                        <span class="text-xs text-base-content/60"><?= e($note) ?></span>
                       <?php endif; ?>
                     </div>
                   </div>
                   <div class="flex w-full flex-wrap items-center gap-2 md:w-auto">
-                    <a class="inline-flex flex-1 items-center justify-center rounded-2xl bg-calm-600 px-4 py-3 text-sm font-medium text-white shadow-sm hover:bg-calm-500 md:flex-none md:py-2.5" href="<?= e($href) ?>">✅ เช็คชื่อ</a>
+                    <a class="btn btn-neutral flex-1 rounded-2xl md:flex-none" href="<?= e($href) ?>">✅ เช็คชื่อ</a>
                     <?php if ($role === 'admin'): ?>
-                      <a class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm hover:bg-black/5 md:py-2.5" href="<?= e($editHref) ?>">✏️ แก้ไข</a>
+                      <a class="btn btn-ghost rounded-2xl border border-base-300" href="<?= e($editHref) ?>">✏️ แก้ไข</a>
                       <form method="post" action="/tracks/class_attendance_delete" data-confirm="ต้องการลบรอบเรียนนี้ใช่ไหม? การเช็คชื่อ/ผลในรอบนี้จะหายไปด้วย">
                         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                         <input type="hidden" name="session_id" value="<?= (int)$id ?>" />
                         <input type="hidden" name="term" value="<?= (int)$term ?>" />
                         <input type="hidden" name="return_year" value="<?= (int)$yearId ?>" />
                         <input type="hidden" name="return_date" value="<?= e((string)$sessionDate) ?>" />
-                        <button class="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-800 hover:bg-red-100 md:py-2.5">🗑️ ลบ</button>
+                        <button class="btn btn-outline btn-error rounded-2xl">🗑️ ลบ</button>
                       </form>
                     <?php endif; ?>
                   </div>
@@ -192,11 +192,11 @@ if ($sessionDate !== '') {
             <?php endforeach; ?>
 
             <?php if (empty($sessionsForDate)): ?>
-              <div class="px-4 py-10 text-center text-sm text-ink-800/70">วันนี้ยังไม่มีรอบเรียน</div>
+              <div class="px-4 py-10 text-center text-sm text-base-content/70">วันนี้ยังไม่มีรอบเรียน</div>
             <?php endif; ?>
       </div>
 
-      <div class="border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60">
+      <div class="border-t border-base-300 bg-base-100 px-4 py-3 text-xs text-base-content/60">
         เคล็ดลับ: สร้างรอบเรียนได้หลายรอบในวันเดียวกัน (คนละกลุ่มนักเรียน)
       </div>
     </div>

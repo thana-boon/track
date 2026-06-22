@@ -14,11 +14,11 @@ if ($regsPage > $totalPages) {
 }
 ?>
 
-<div class="mt-4 overflow-hidden rounded-3xl border border-black/5" id="regsContainer" data-page="<?= (int)$regsPage ?>" data-pages="<?= (int)$totalPages ?>" data-total="<?= (int)$regsTotalCount ?>">
-  <div class="flex flex-wrap items-center justify-between gap-2 bg-sand-100 px-4 py-3">
+<div class="mt-4 overflow-hidden rounded-3xl border border-base-300" id="regsContainer" data-page="<?= (int)$regsPage ?>" data-pages="<?= (int)$totalPages ?>" data-total="<?= (int)$regsTotalCount ?>">
+  <div class="flex flex-wrap items-center justify-between gap-2 bg-base-200 px-4 py-3">
     <div>
       <div class="text-sm font-semibold">📌 รายการที่ลงทะเบียนแล้ว (ตามตัวกรอง)</div>
-      <div class="mt-0.5 text-xs text-ink-800/60">ทั้งหมด <?= (int)$regsTotalCount ?> รายการ • หน้า <?= (int)$regsPage ?>/<?= (int)$totalPages ?> • แสดง <?= (int)$regsPageSize ?> ต่อหน้า</div>
+      <div class="mt-0.5 text-xs text-base-content/60">ทั้งหมด <?= (int)$regsTotalCount ?> รายการ • หน้า <?= (int)$regsPage ?>/<?= (int)$totalPages ?> • แสดง <?= (int)$regsPageSize ?> ต่อหน้า</div>
     </div>
 
     <div class="flex items-center gap-2 text-xs">
@@ -33,14 +33,14 @@ if ($regsPage > $totalPages) {
         $nextHref = $baseHref . ($nextPage > 1 ? ($pageSep . 'page=' . $nextPage) : '');
         $postAction = $baseHref . ($regsPage > 1 ? ($pageSep . 'page=' . $regsPage) : '');
       ?>
-      <a class="regs-page-link rounded-2xl border border-black/10 bg-white px-3 py-2 hover:bg-black/5 <?= ($regsPage <= 1) ? 'pointer-events-none opacity-50' : '' ?>" data-page="<?= (int)$prevPage ?>" href="<?= e($prevHref) ?>">⬅ ก่อนหน้า</a>
-      <a class="regs-page-link rounded-2xl border border-black/10 bg-white px-3 py-2 hover:bg-black/5 <?= ($regsPage >= $totalPages) ? 'pointer-events-none opacity-50' : '' ?>" data-page="<?= (int)$nextPage ?>" href="<?= e($nextHref) ?>">ถัดไป ➡</a>
+      <a class="regs-page-link rounded-2xl border border-base-300 bg-base-100 px-3 py-2 hover:bg-base-200 <?= ($regsPage <= 1) ? 'pointer-events-none opacity-50' : '' ?>" data-page="<?= (int)$prevPage ?>" href="<?= e($prevHref) ?>">⬅ ก่อนหน้า</a>
+      <a class="regs-page-link rounded-2xl border border-base-300 bg-base-100 px-3 py-2 hover:bg-base-200 <?= ($regsPage >= $totalPages) ? 'pointer-events-none opacity-50' : '' ?>" data-page="<?= (int)$nextPage ?>" href="<?= e($nextHref) ?>">ถัดไป ➡</a>
     </div>
   </div>
 
   <div class="overflow-auto">
-    <table class="min-w-full bg-white text-sm">
-      <thead class="bg-sand-50 text-left text-xs text-ink-800/70">
+    <table class="min-w-full bg-base-100 text-sm">
+      <thead class="bg-base-200 text-left text-xs text-base-content/70">
         <tr>
           <th class="px-4 py-3">นักเรียน</th>
           <th class="px-4 py-3">วิชา</th>
@@ -48,19 +48,19 @@ if ($regsPage > $totalPages) {
           <th class="px-4 py-3">จัดการ</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-black/5">
+      <tbody class="divide-y divide-base-300">
         <?php foreach ($regs as $r): ?>
-          <tr class="hover:bg-sand-50">
+          <tr class="hover:bg-base-200">
             <td class="px-4 py-3">
               <div class="font-medium">
                 <a class="hover:underline" href="/tracks/student_manage?year_id=<?= (int)$r['year_id'] ?>&term=<?= (int)$term ?>&student_code=<?= e(rawurlencode((string)$r['student_code'])) ?>"><?= e((string)$r['first_name'] . ' ' . (string)$r['last_name']) ?></a>
               </div>
-              <div class="mt-1 text-xs text-ink-800/60"><?= e((string)$r['student_code']) ?> • <?= e((string)$r['class_level']) ?>/<?= e((string)$r['class_room']) ?> เลขที่ <?= e((string)$r['number_in_room']) ?></div>
+              <div class="mt-1 text-xs text-base-content/60"><?= e((string)$r['student_code']) ?> • <?= e((string)$r['class_level']) ?>/<?= e((string)$r['class_room']) ?> เลขที่ <?= e((string)$r['number_in_room']) ?></div>
             </td>
             <td class="px-4 py-3">
-              <span class="inline-flex items-center rounded-full bg-pastel-lilac/70 px-2.5 py-1 text-xs text-ink-800 ring-1 ring-black/5">🧩 <?= e((string)$r['subject_title']) ?></span>
+              <span class="inline-flex items-center rounded-full bg-pastel-lilac/70 px-2.5 py-1 text-xs text-base-content ring-1 ring-base-300">🧩 <?= e((string)$r['subject_title']) ?></span>
             </td>
-            <td class="px-4 py-3 text-xs text-ink-800/60"><?= e((string)$r['created_at']) ?></td>
+            <td class="px-4 py-3 text-xs text-base-content/60"><?= e((string)$r['created_at']) ?></td>
             <td class="px-4 py-3">
               <form method="post" action="<?= e((string)$postAction) ?>" data-confirm="ยืนยันลบรายการนี้?">
                 <input type="hidden" name="_csrf" value="<?= e((string)$csrf) ?>" />
@@ -74,7 +74,7 @@ if ($regsPage > $totalPages) {
 
         <?php if (empty($regs)): ?>
           <tr>
-            <td colspan="4" class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีรายการตามตัวกรอง</td>
+            <td colspan="4" class="px-4 py-10 text-center text-sm text-base-content/70">ยังไม่มีรายการตามตัวกรอง</td>
           </tr>
         <?php endif; ?>
       </tbody>

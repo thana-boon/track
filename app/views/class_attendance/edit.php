@@ -28,15 +28,15 @@ $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '')
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="rounded-3xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">✏️ แก้ไขรอบเรียน</h1>
-        <p class="mt-1 text-sm text-ink-800/70">แก้ไขวิชา/วันที่/หมายเหตุ และรายชื่อนักเรียนในรอบเรียนนี้</p>
+        <p class="mt-1 text-sm text-base-content/70">แก้ไขวิชา/วันที่/หมายเหตุ และรายชื่อนักเรียนในรอบเรียนนี้</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="<?= e($backHref) ?>">← กลับตารางเรียน</a>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200" href="<?= e($backHref) ?>">← กลับตารางเรียน</a>
       </div>
     </div>
 
@@ -55,7 +55,7 @@ $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '')
       <div class="grid gap-3 md:grid-cols-2">
         <div>
           <label class="text-xs font-medium">วิชา</label>
-          <select name="subject_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+          <select name="subject_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
             <?php foreach ($subjects as $s): ?>
               <?php
                 $id = (int)($s['id'] ?? 0);
@@ -69,24 +69,24 @@ $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '')
 
         <div>
           <label class="text-xs font-medium">วันที่เรียน</label>
-          <input type="date" name="session_date" value="<?= e($sessionDate) ?>" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+          <input type="date" name="session_date" value="<?= e($sessionDate) ?>" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
         </div>
       </div>
 
       <div>
         <label class="text-xs font-medium">หมายเหตุ (ไม่บังคับ)</label>
-        <input name="note" value="<?= e($note) ?>" placeholder="เช่น กลุ่มเช้า / กลุ่มบ่าย" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+        <input name="note" value="<?= e($note) ?>" placeholder="เช่น กลุ่มเช้า / กลุ่มบ่าย" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
       </div>
 
       <div class="grid gap-3 lg:grid-cols-3">
-        <div class="lg:col-span-2 rounded-3xl border border-black/5 bg-white/70 p-3">
+        <div class="lg:col-span-2 rounded-3xl border border-base-300 bg-base-100/70 p-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="text-xs font-semibold">👥 นักเรียนในรอบนี้</div>
-            <div class="text-[11px] text-ink-800/60">ยกเลิกติ๊ก = นำออกจากรอบเรียน • มี <?= (int)count($existingCodes) ?> คน</div>
+            <div class="text-[11px] text-base-content/60">ยกเลิกติ๊ก = นำออกจากรอบเรียน • มี <?= (int)count($existingCodes) ?> คน</div>
           </div>
 
-          <div class="mt-3 max-h-[420px] overflow-auto rounded-2xl border border-black/5 bg-white">
-            <ul class="divide-y divide-black/5">
+          <div class="mt-3 max-h-[420px] overflow-auto rounded-2xl border border-base-300 bg-base-100">
+            <ul class="divide-y divide-base-300">
               <?php if (!empty($roster)): ?>
                 <?php foreach ($roster as $r): ?>
                   <?php
@@ -94,16 +94,16 @@ $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '')
                     $name = trim((string)($r['first_name'] ?? '') . ' ' . (string)($r['last_name'] ?? ''));
                     $meta = trim((string)($r['class_level'] ?? '') . '/' . (string)($r['class_room'] ?? '') . ' เลขที่ ' . (string)($r['number_in_room'] ?? ''));
                   ?>
-                  <li class="px-3 py-2 hover:bg-sand-50">
+                  <li class="px-3 py-2 hover:bg-base-200">
                     <label class="flex items-start gap-3">
-                      <input class="mt-1 h-4 w-4 rounded border-black/20" type="checkbox" name="student_codes[]" value="<?= e($code) ?>" checked />
+                      <input class="mt-1 h-4 w-4 rounded border-base-300" type="checkbox" name="student_codes[]" value="<?= e($code) ?>" checked />
                       <span class="block flex-1">
                         <span class="flex flex-wrap items-center gap-2">
                           <span class="font-medium"><?= e($name !== '' ? $name : $code) ?></span>
-                          <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= e($code) ?></span>
+                          <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300"><?= e($code) ?></span>
                         </span>
                         <?php if ($meta !== '/ เลขที่'): ?>
-                          <span class="mt-1 block text-xs text-ink-800/60"><?= e($meta) ?></span>
+                          <span class="mt-1 block text-xs text-base-content/60"><?= e($meta) ?></span>
                         <?php endif; ?>
                       </span>
                     </label>
@@ -111,13 +111,13 @@ $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '')
                 <?php endforeach; ?>
               <?php else: ?>
                 <?php foreach ($existingCodes as $code): ?>
-                  <li class="px-3 py-2 hover:bg-sand-50">
+                  <li class="px-3 py-2 hover:bg-base-200">
                     <label class="flex items-start gap-3">
-                      <input class="mt-1 h-4 w-4 rounded border-black/20" type="checkbox" name="student_codes[]" value="<?= e((string)$code) ?>" checked />
+                      <input class="mt-1 h-4 w-4 rounded border-base-300" type="checkbox" name="student_codes[]" value="<?= e((string)$code) ?>" checked />
                       <span class="block flex-1">
                         <span class="flex flex-wrap items-center gap-2">
                           <span class="font-medium"><?= e((string)$code) ?></span>
-                          <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5">รหัส</span>
+                          <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300">รหัส</span>
                         </span>
                       </span>
                     </label>
@@ -126,33 +126,33 @@ $backHref = '/tracks/class_attendance' . ($backQs !== '' ? ('?' . $backQs) : '')
               <?php endif; ?>
 
               <?php if (empty($existingCodes)): ?>
-                <li class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีนักเรียนในรอบนี้</li>
+                <li class="px-4 py-10 text-center text-sm text-base-content/70">ยังไม่มีนักเรียนในรอบนี้</li>
               <?php endif; ?>
             </ul>
           </div>
         </div>
 
-        <div class="rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4">
+        <div class="rounded-3xl border border-base-300 bg-base-200 p-4">
           <div class="text-sm font-semibold">📥 เพิ่มรหัสนักเรียน</div>
-          <p class="mt-1 text-xs text-ink-800/60">ใส่ 1 บรรทัดต่อ 1 คน (ใส่แค่รหัส หรือ ใส่ชื่อแล้วตามด้วยรหัสก็ได้)</p>
+          <p class="mt-1 text-xs text-base-content/60">ใส่ 1 บรรทัดต่อ 1 คน (ใส่แค่รหัส หรือ ใส่ชื่อแล้วตามด้วยรหัสก็ได้)</p>
 
           <textarea
             name="student_codes_text"
             rows="10"
             placeholder="ตัวอย่าง:&#10;65001&#10;สมชาย ใจดี 65002&#10;65003"
-            class="mt-3 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500"
+            class="mt-3 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500"
           ><?= e($studentCodesText) ?></textarea>
 
           <div class="mt-4">
-            <button class="w-full rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 บันทึกการแก้ไข</button>
+            <button class="w-full rounded-2xl bg-neutral px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90">💾 บันทึกการแก้ไข</button>
           </div>
 
-          <div class="mt-3 text-[11px] text-ink-800/60">หมายเหตุ: ระบบจะรวมรหัสกับรายชื่อที่ติ๊กไว้ แล้วตัดซ้ำอัตโนมัติ</div>
+          <div class="mt-3 text-[11px] text-base-content/60">หมายเหตุ: ระบบจะรวมรหัสกับรายชื่อที่ติ๊กไว้ แล้วตัดซ้ำอัตโนมัติ</div>
         </div>
       </div>
 
       <div class="flex items-center justify-end gap-2">
-        <button class="rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 บันทึกการแก้ไข</button>
+        <button class="rounded-2xl bg-neutral px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90">💾 บันทึกการแก้ไข</button>
       </div>
     </form>
   </section>

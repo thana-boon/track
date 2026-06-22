@@ -26,14 +26,14 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="rounded-3xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">🧾 ลงทะเบียน Track</h1>
-        <p class="mt-1 text-sm text-ink-800/70">ออกแบบให้ “ลงวิชาเดียวกันหลายคน” ได้เร็ว: เลือกเด็กหลายคน → เลือกวิชา → กดลงทะเบียน</p>
+        <p class="mt-1 text-sm text-base-content/70">ออกแบบให้ “ลงวิชาเดียวกันหลายคน” ได้เร็ว: เลือกเด็กหลายคน → เลือกวิชา → กดลงทะเบียน</p>
       </div>
 
-      <div class="text-xs text-ink-800/60">
+      <div class="text-xs text-base-content/60">
         เคล็ดลับ: ลากการ์ดวิชาไปวางบนชื่อนักเรียนได้
       </div>
     </div>
@@ -46,11 +46,11 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
       <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
     <?php endif; ?>
 
-    <form class="mt-4 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-lilac/20 p-4 md:grid-cols-6" method="get" action="<?= e((string)$basePath) ?>">
+    <form class="mt-4 grid gap-3 rounded-3xl border border-base-300 bg-base-200 p-4 md:grid-cols-6" method="get" action="<?= e((string)$basePath) ?>">
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ปีการศึกษา</label>
-        <select name="year_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+        <select name="year_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
           <?php foreach (($years ?? []) as $y): ?>
             <?php
               $id = (int)$y['id'];
@@ -64,7 +64,7 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
 
       <div>
         <label class="text-xs font-medium">เทอม</label>
-        <select name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+        <select name="term" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
           <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
           <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
         </select>
@@ -72,7 +72,7 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
 
       <div>
         <label class="text-xs font-medium">ชั้น</label>
-        <select name="class_level" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+        <select name="class_level" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
           <?php foreach (($classLevelOptions ?? []) as $val => $label): ?>
             <option value="<?= e((string)$val) ?>" <?= ((string)($filters['class_level'] ?? '') === (string)$val) ? 'selected' : '' ?>><?= e((string)$label) ?></option>
           <?php endforeach; ?>
@@ -81,22 +81,22 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
 
       <div>
         <label class="text-xs font-medium">ห้อง</label>
-        <input name="room" value="<?= e((string)($filters['room'] ?? '')) ?>" placeholder="เช่น 1" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+        <input name="room" value="<?= e((string)($filters['room'] ?? '')) ?>" placeholder="เช่น 1" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
       </div>
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ค้นหา</label>
-        <input name="q" value="<?= e((string)($filters['q'] ?? '')) ?>" placeholder="เลขประจำตัว / ชื่อ / นามสกุล / วิชา" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+        <input name="q" value="<?= e((string)($filters['q'] ?? '')) ?>" placeholder="เลขประจำตัว / ชื่อ / นามสกุล / วิชา" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
       </div>
 
       <div class="md:col-span-6 flex flex-wrap items-center gap-2">
-        <button class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 โหลดรายชื่อ</button>
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/register_track">🧹 ล้างตัวกรอง</a>
+        <button class="inline-flex items-center justify-center rounded-2xl bg-neutral px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 โหลดรายชื่อ</button>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200" href="/tracks/register_track">🧹 ล้างตัวกรอง</a>
       </div>
     </form>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2 lg:items-stretch">
-      <form id="bulkForm" class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-mint/25 p-5" method="post" action="<?= e((string)$filterHref) ?>">
+      <form id="bulkForm" class="flex h-full flex-col rounded-3xl border border-base-300 bg-base-200 p-5" method="post" action="<?= e((string)$filterHref) ?>">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
 
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -104,19 +104,19 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
             <div class="flex flex-wrap items-center gap-3">
               <h2 class="text-sm font-semibold">👧🧒 เลือกนักเรียน</h2>
               <label class="inline-flex items-center gap-2 text-xs">
-                <input id="checkAll" type="checkbox" class="h-4 w-4 rounded border-black/20 text-calm-600 focus:ring-calm-500" />
+                <input id="checkAll" type="checkbox" class="h-4 w-4 rounded border-base-300 text-calm-600 focus:ring-calm-500" />
                 เลือกทั้งหมด
               </label>
-              <button id="clearAll" type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-1.5 text-xs hover:bg-black/5">🚫 เอาติ๊กออกทั้งหมด</button>
+              <button id="clearAll" type="button" class="rounded-2xl border border-base-300 bg-base-100 px-3 py-1.5 text-xs hover:bg-base-200">🚫 เอาติ๊กออกทั้งหมด</button>
             </div>
-            <p class="mt-1 text-xs text-ink-800/60">เลือก 1 คน = ลงรายบุคคล • เลือกหลายคน = ลงกลุ่ม</p>
+            <p class="mt-1 text-xs text-base-content/60">เลือก 1 คน = ลงรายบุคคล • เลือกหลายคน = ลงกลุ่ม</p>
           </div>
         </div>
 
         <div class="mt-4 grid gap-3 sm:grid-cols-2">
           <div class="sm:col-span-2">
             <label class="text-xs font-medium">วิชาที่จะลงทะเบียน</label>
-            <select id="subjectSelect" name="subject_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500">
+            <select id="subjectSelect" name="subject_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500">
               <option value="">— เลือกวิชา —</option>
               <?php foreach ($activeSubjects as $subj): ?>
                 <option value="<?= (int)$subj['id'] ?>"><?= e((string)$subj['title']) ?></option>
@@ -124,70 +124,70 @@ $filterHref = $basePath . ($filterBaseQuery !== '' ? ('?' . $filterBaseQuery) : 
             </select>
           </div>
 
-          <button name="action" value="bulk_assign" class="rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">✅ ลงทะเบียนให้ที่เลือก</button>
+          <button name="action" value="bulk_assign" class="rounded-2xl bg-neutral px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90">✅ ลงทะเบียนให้ที่เลือก</button>
           <button name="action" value="bulk_unassign" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-100">🗑️ ลบวิชานี้ออกจากที่เลือก</button>
         </div>
 
-        <div class="mt-4 flex-1 overflow-hidden rounded-3xl border border-black/5 bg-white/80">
+        <div class="mt-4 flex-1 overflow-hidden rounded-3xl border border-base-300 bg-base-100/80">
           <div class="max-h-[420px] overflow-auto">
-            <ul class="divide-y divide-black/5">
+            <ul class="divide-y divide-base-300">
               <?php foreach ($students as $s): ?>
                 <?php
                   $code = (string)$s['student_code'];
                   $name = (string)$s['first_name'] . ' ' . (string)$s['last_name'];
                   $meta = (string)$s['class_level'] . '/' . (string)$s['class_room'] . ' เลขที่ ' . (string)$s['number_in_room'];
                 ?>
-                <li class="student-row flex items-center gap-3 px-4 py-3 hover:bg-sand-50" data-student="<?= e($code) ?>">
-                  <input class="student-check h-4 w-4 rounded border-black/20 text-calm-600 focus:ring-calm-500" type="checkbox" name="student_codes[]" value="<?= e($code) ?>" />
+                <li class="student-row flex items-center gap-3 px-4 py-3 hover:bg-base-200" data-student="<?= e($code) ?>">
+                  <input class="student-check h-4 w-4 rounded border-base-300 text-calm-600 focus:ring-calm-500" type="checkbox" name="student_codes[]" value="<?= e($code) ?>" />
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
                       <span class="font-medium truncate"><?= e($name) ?></span>
-                      <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= e($code) ?></span>
+                      <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300"><?= e($code) ?></span>
                     </div>
-                    <div class="mt-1 text-xs text-ink-800/60"><?= e($meta) ?></div>
+                    <div class="mt-1 text-xs text-base-content/60"><?= e($meta) ?></div>
                   </div>
-                  <span class="rounded-2xl border border-black/10 bg-white px-2.5 py-1 text-xs text-ink-800/60">วางวิชาที่นี่ ↘</span>
+                  <span class="rounded-2xl border border-base-300 bg-base-100 px-2.5 py-1 text-xs text-base-content/60">วางวิชาที่นี่ ↘</span>
                 </li>
               <?php endforeach; ?>
 
               <?php if (empty($students)): ?>
-                <li class="px-4 py-10 text-center text-sm text-ink-800/70">ไม่พบรายชื่อนักเรียนตามตัวกรอง</li>
+                <li class="px-4 py-10 text-center text-sm text-base-content/70">ไม่พบรายชื่อนักเรียนตามตัวกรอง</li>
               <?php endif; ?>
             </ul>
           </div>
         </div>
 
-        <p class="mt-3 text-xs text-ink-800/60">หมายเหตุ: ลงทะเบียนจะไม่ซ้ำ (กันซ้ำให้อัตโนมัติ)</p>
+        <p class="mt-3 text-xs text-base-content/60">หมายเหตุ: ลงทะเบียนจะไม่ซ้ำ (กันซ้ำให้อัตโนมัติ)</p>
       </form>
 
-      <div class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/25 p-5">
+      <div class="flex h-full flex-col rounded-3xl border border-base-300 bg-base-200 p-5">
         <div class="flex items-start justify-between gap-3">
           <div>
             <h2 class="text-sm font-semibold">🧩 วิชา (ลากได้)</h2>
-            <p class="mt-1 text-xs text-ink-800/60">ลากการ์ดวิชาไปวางที่ชื่อนักเรียนเพื่อเพิ่มรายบุคคลแบบเร็วๆ</p>
+            <p class="mt-1 text-xs text-base-content/60">ลากการ์ดวิชาไปวางที่ชื่อนักเรียนเพื่อเพิ่มรายบุคคลแบบเร็วๆ</p>
           </div>
-          <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/track-subjects">จัดการวิชา</a>
+          <a class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" href="/tracks/track-subjects">จัดการวิชา</a>
         </div>
 
         <div class="mt-4 grid gap-3 sm:grid-cols-2">
           <?php foreach ($activeSubjects as $subj): ?>
-            <div draggable="true" class="subject-card cursor-grab rounded-3xl border border-black/5 bg-white/85 p-4 shadow-sm hover:bg-white" data-subject="<?= (int)$subj['id'] ?>">
+            <div draggable="true" class="subject-card cursor-grab rounded-3xl border border-base-300 bg-base-100/85 p-4 shadow-sm hover:bg-base-100" data-subject="<?= (int)$subj['id'] ?>">
               <div class="text-sm font-semibold"><?= e((string)$subj['title']) ?></div>
               <?php if (!empty($subj['description'])): ?>
-                <div class="mt-1 line-clamp-2 text-xs text-ink-800/60"><?= e((string)$subj['description']) ?></div>
+                <div class="mt-1 line-clamp-2 text-xs text-base-content/60"><?= e((string)$subj['description']) ?></div>
               <?php endif; ?>
-              <div class="mt-3 text-xs text-ink-800/55">ลากไปวาง หรือเลือกจาก dropdown</div>
+              <div class="mt-3 text-xs text-base-content/55">ลากไปวาง หรือเลือกจาก dropdown</div>
             </div>
           <?php endforeach; ?>
 
           <?php if (empty($activeSubjects)): ?>
-            <div class="sm:col-span-2 rounded-3xl border border-black/5 bg-white/70 p-5 text-sm text-ink-800/70">
+            <div class="sm:col-span-2 rounded-3xl border border-base-300 bg-base-100/70 p-5 text-sm text-base-content/70">
               ยังไม่มีวิชาที่เปิดใช้งาน ไปเพิ่มที่หน้า “วิชา Track” ก่อนครับ
             </div>
           <?php endif; ?>
         </div>
 
-        <div class="mt-4 rounded-3xl border border-black/5 bg-white/70 p-4 text-xs text-ink-800/60">
+        <div class="mt-4 rounded-3xl border border-base-300 bg-base-100/70 p-4 text-xs text-base-content/60">
           ถ้าลากไม่ได้ (มือถือ) ให้เลือกนักเรียนด้วย checkbox แล้วกด “ลงทะเบียนให้ที่เลือก” แทน
         </div>
       </div>

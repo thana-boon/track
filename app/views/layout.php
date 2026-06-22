@@ -2,7 +2,7 @@
 $user = auth_user();
 ?>
 <!doctype html>
-<html lang="th" data-theme="cupcake">
+<html lang="th" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -17,30 +17,31 @@ $user = auth_user();
       theme: {
         extend: {
           colors: {
-            // daisyUI semantic tokens — อ้างอิง CSS variables ของ theme cupcake (เปลี่ยน theme แล้วสีจะตามทันที)
-            primary: 'hsl(var(--p))',
-            'primary-content': 'hsl(var(--pc))',
-            secondary: 'hsl(var(--s))',
-            'secondary-content': 'hsl(var(--sc))',
-            accent: 'hsl(var(--a))',
-            'accent-content': 'hsl(var(--ac))',
-            neutral: 'hsl(var(--n))',
-            'neutral-content': 'hsl(var(--nc))',
-            'base-100': 'hsl(var(--b1))',
-            'base-200': 'hsl(var(--b2))',
-            'base-300': 'hsl(var(--b3))',
-            'base-content': 'hsl(var(--bc))',
-            info: 'hsl(var(--in))',
-            success: 'hsl(var(--su))',
-            warning: 'hsl(var(--wa))',
-            error: 'hsl(var(--er))',
+            // daisyUI semantic tokens — daisyUI v4 ใช้ค่า OKLCH ใน CSS variables (เปลี่ยน theme แล้วสีตามทันที)
+            primary: 'oklch(var(--p) / <alpha-value>)',
+            'primary-content': 'oklch(var(--pc) / <alpha-value>)',
+            secondary: 'oklch(var(--s) / <alpha-value>)',
+            'secondary-content': 'oklch(var(--sc) / <alpha-value>)',
+            accent: 'oklch(var(--a) / <alpha-value>)',
+            'accent-content': 'oklch(var(--ac) / <alpha-value>)',
+            neutral: 'oklch(var(--n) / <alpha-value>)',
+            'neutral-content': 'oklch(var(--nc) / <alpha-value>)',
+            'base-100': 'oklch(var(--b1) / <alpha-value>)',
+            'base-200': 'oklch(var(--b2) / <alpha-value>)',
+            'base-300': 'oklch(var(--b3) / <alpha-value>)',
+            'base-content': 'oklch(var(--bc) / <alpha-value>)',
+            info: 'oklch(var(--in) / <alpha-value>)',
+            success: 'oklch(var(--su) / <alpha-value>)',
+            warning: 'oklch(var(--wa) / <alpha-value>)',
+            error: 'oklch(var(--er) / <alpha-value>)',
 
-            // legacy tokens — remap เป็นพาเลตต์ cupcake ชั่วคราว ระหว่างทยอยแปลงแต่ละหน้าเป็น daisyUI
+            // พาเลตต์เสริมที่จูนให้เข้ากับ cupcake (ink/sand ส่วนใหญ่ถูกแทนด้วย semantic แล้ว — คงไว้กันพลาด)
             ink:    { 950: '#1f0f29', 900: '#291334', 800: '#3b2147', 700: '#4e2f5b', 100: '#f3eef6' },
             pastel: { mint: '#d9f3ee', sky: '#d4eef0', lilac: '#fbe7ef', peach: '#fbe2d4', lemon: '#fdeec9' },
-            calm:   { 700: '#3a9aa0', 600: '#4fb3b8', 500: '#65c3c8', 100: '#e2f4f5' },
+            // calm = teal เข้มอ่านง่าย (ใช้คู่ text-white / เป็นสีตัวอักษรได้) เข้ากับ primary ของ cupcake
+            calm:   { 700: '#1f6f6a', 600: '#2b7f79', 500: '#3b918a', 400: '#5aa39c', 100: '#e6f3f2', 50: '#eef7f6' },
             sand:   { 50: '#faf7f5', 100: '#efeae6', 200: '#e7e2df' },
-            blush:  { 600: '#ef9fbc', 50: '#fbe7ef' }
+            blush:  { 600: '#c24174', 50: '#fff1f2' }
           }
         }
       }
@@ -189,16 +190,10 @@ $user = auth_user();
 </style>
 <body class="min-h-screen bg-base-200 text-base-content">
 
-  <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
-    <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-secondary/25 blur-3xl"></div>
-    <div class="absolute top-40 -right-24 h-80 w-80 rounded-full bg-primary/25 blur-3xl"></div>
-    <div class="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-accent/20 blur-3xl"></div>
-  </div>
-
   <header class="sticky top-0 z-10 border-b border-base-300 bg-base-100/80 backdrop-blur">
     <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
       <a class="group flex items-center gap-2 font-semibold tracking-tight" href="/tracks/">
-        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-content shadow-sm ring-1 ring-black/5">🏃</span>
+        <span class="grid h-9 w-9 place-items-center text-2xl">🏃</span>
         <span class="leading-none">
           <span class="block text-sm text-base-content/60">Sukhon</span>
           <span class="block -mt-0.5 text-base text-base-content">Track</span>
@@ -305,8 +300,8 @@ $user = auth_user();
     <?= $content ?>
   </main>
 
-  <footer class="border-t border-black/5 bg-white/55">
-    <div class="mx-auto max-w-6xl px-4 py-6 text-xs text-ink-800/60">
+  <footer class="border-t border-base-300 bg-base-100/60">
+    <div class="mx-auto max-w-6xl px-4 py-6 text-xs text-base-content/60">
       Powred by IT Sukhon • <?= date('Y-m-d H:i') ?>
     </div>
   </footer>

@@ -5,15 +5,15 @@ $groups = is_array($groups ?? null) ? $groups : [];
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="rounded-3xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">🧩 วิชา Track</h1>
-        <p class="mt-1 text-sm text-ink-800/70">เพิ่ม/แก้ไข/ลบ วิชาที่ใช้ให้ลงทะเบียนในอนาคต</p>
+        <p class="mt-1 text-sm text-base-content/70">เพิ่ม/แก้ไข/ลบ วิชาที่ใช้ให้ลงทะเบียนในอนาคต</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm hover:bg-black/5" href="/tracks/track-subjects?export=1&_csrf=<?= e($csrf) ?>">⬇️ Export CSV</a>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2 text-sm hover:bg-base-200" href="/tracks/track-subjects?export=1&_csrf=<?= e($csrf) ?>">⬇️ Export CSV</a>
       </div>
     </div>
 
@@ -30,9 +30,9 @@ $groups = is_array($groups ?? null) ? $groups : [];
     <?php endif; ?>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2 lg:items-stretch">
-      <div class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-mint/25 p-5">
+      <div class="flex h-full flex-col rounded-3xl border border-base-300 bg-base-200 p-5">
         <h2 class="text-sm font-semibold"><?= $editing ? '✏️ แก้ไขวิชา' : '➕ เพิ่มวิชา' ?></h2>
-        <p class="mt-1 text-xs text-ink-800/60">ตัวอย่าง: การจัดการครัว, การสร้างโปรแกรม, คณิตขั้นสูง</p>
+        <p class="mt-1 text-xs text-base-content/60">ตัวอย่าง: การจัดการครัว, การสร้างโปรแกรม, คณิตขั้นสูง</p>
 
         <?php if (empty($groups)): ?>
           <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -49,7 +49,7 @@ $groups = is_array($groups ?? null) ? $groups : [];
 
           <div>
             <label class="text-xs font-medium">กลุ่ม Track</label>
-            <select name="group_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" <?= empty($groups) ? 'disabled' : '' ?>>
+            <select name="group_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500" <?= empty($groups) ? 'disabled' : '' ?>>
               <option value="">— เลือกกลุ่ม —</option>
               <?php $selectedGroupId = (int)($editing['group_id'] ?? 0); ?>
               <?php foreach ($groups as $g): ?>
@@ -61,31 +61,31 @@ $groups = is_array($groups ?? null) ? $groups : [];
 
           <div>
             <label class="text-xs font-medium">รหัสวิชา</label>
-            <input name="subject_code" value="<?= e((string)($editing['subject_code'] ?? '')) ?>" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เช่น ENG101" />
+            <input name="subject_code" value="<?= e((string)($editing['subject_code'] ?? '')) ?>" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เช่น ENG101" />
           </div>
 
           <div>
             <label class="text-xs font-medium">ชื่อวิชา</label>
-            <input name="title" value="<?= e((string)($editing['title'] ?? '')) ?>" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เช่น การสร้างโปรแกรม" />
+            <input name="title" value="<?= e((string)($editing['title'] ?? '')) ?>" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เช่น การสร้างโปรแกรม" />
           </div>
 
           <div>
             <label class="text-xs font-medium">รายละเอียด (ไม่บังคับ)</label>
-            <textarea name="description" rows="3" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="รายละเอียดสั้นๆ ของวิชา"><?= e((string)($editing['description'] ?? '')) ?></textarea>
+            <textarea name="description" rows="3" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="รายละเอียดสั้นๆ ของวิชา"><?= e((string)($editing['description'] ?? '')) ?></textarea>
           </div>
 
           <div class="flex items-center justify-between gap-3">
             <label class="inline-flex items-center gap-2 text-sm">
               <?php $checked = $editing ? ((int)($editing['is_active'] ?? 1) === 1) : true; ?>
-              <input type="checkbox" name="is_active" value="1" <?= $checked ? 'checked' : '' ?> class="h-4 w-4 rounded border-black/20 text-calm-600 focus:ring-calm-500" />
+              <input type="checkbox" name="is_active" value="1" <?= $checked ? 'checked' : '' ?> class="h-4 w-4 rounded border-base-300 text-calm-600 focus:ring-calm-500" />
               <span>เปิดใช้งาน</span>
             </label>
 
             <div class="flex items-center gap-2">
               <?php if ($editing): ?>
-                <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/track-subjects">ยกเลิก</a>
+                <a class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" href="/tracks/track-subjects">ยกเลิก</a>
               <?php endif; ?>
-              <button class="rounded-2xl bg-calm-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-calm-500">
+              <button class="rounded-2xl bg-neutral px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90">
                 <?= $editing ? '💾 บันทึก' : '✅ เพิ่มวิชา' ?>
               </button>
             </div>
@@ -93,9 +93,9 @@ $groups = is_array($groups ?? null) ? $groups : [];
         </form>
       </div>
 
-      <div class="flex h-full flex-col rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/25 p-5">
+      <div class="flex h-full flex-col rounded-3xl border border-base-300 bg-base-200 p-5">
         <h2 class="text-sm font-semibold">📦 Import CSV</h2>
-        <p class="mt-1 text-xs text-ink-800/60">คอลัมน์ใหม่: <span class="font-mono">subject_code,title,group_title,description,is_active</span> (รองรับไฟล์แบบเก่า <span class="font-mono">title,description,is_active</span> ด้วย)</p>
+        <p class="mt-1 text-xs text-base-content/60">คอลัมน์ใหม่: <span class="font-mono">subject_code,title,group_title,description,is_active</span> (รองรับไฟล์แบบเก่า <span class="font-mono">title,description,is_active</span> ด้วย)</p>
 
         <form method="post" enctype="multipart/form-data" class="mt-4 space-y-3">
           <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
@@ -104,20 +104,20 @@ $groups = is_array($groups ?? null) ? $groups : [];
           <div>
             <label class="text-xs font-medium">ไฟล์ CSV</label>
             <input type="file" name="csv_file" accept=".csv,text/csv" class="mt-1 block w-full text-sm" />
-            <p class="mt-1 text-xs text-ink-800/60">จำกัดขนาด 2MB</p>
+            <p class="mt-1 text-xs text-base-content/60">จำกัดขนาด 2MB</p>
           </div>
 
           <div>
             <label class="text-xs font-medium">โหมดนำเข้า</label>
-            <select name="import_mode" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500">
+            <select name="import_mode" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500">
               <option value="upsert" selected>🔁 อัปเดตทับเมื่อชื่อวิชาซ้ำ (แนะนำ)</option>
               <option value="skip">⏭️ ข้ามเมื่อชื่อวิชาซ้ำ</option>
             </select>
           </div>
 
-          <button class="rounded-2xl bg-ink-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-ink-800">📤 นำเข้า CSV</button>
+          <button class="btn btn-neutral rounded-2xl">📤 นำเข้า CSV</button>
 
-          <div class="rounded-2xl border border-black/5 bg-white/70 p-3 text-xs text-ink-800/60">
+          <div class="rounded-2xl border border-base-300 bg-base-100/70 p-3 text-xs text-base-content/60">
             เคล็ดลับ: ถ้าเปิดใน Excel แล้วตัวหนังสือเพี้ยน ให้บันทึกเป็น CSV UTF-8
           </div>
         </form>
@@ -129,14 +129,14 @@ $groups = is_array($groups ?? null) ? $groups : [];
         id="subjectFilter"
         type="search"
         placeholder="🔍 ค้นหารหัสวิชา / ชื่อวิชา / กลุ่ม..."
-        class="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-calm-500"
+        class="w-full rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm outline-none focus:border-calm-500"
         oninput="filterSubjects()"
       />
     </div>
 
-    <div class="mt-2 overflow-hidden rounded-3xl border border-black/5">
-      <table class="min-w-full bg-white text-sm" id="subjectTable">
-        <thead class="bg-sand-100 text-left text-xs text-ink-800/70">
+    <div class="mt-2 overflow-hidden rounded-3xl border border-base-300">
+      <table class="min-w-full bg-base-100 text-sm" id="subjectTable">
+        <thead class="bg-base-200 text-left text-xs text-base-content/70">
           <tr>
             <th class="px-4 py-3">🔤 รหัส</th>
             <th class="px-4 py-3">🧩 กลุ่ม</th>
@@ -146,36 +146,36 @@ $groups = is_array($groups ?? null) ? $groups : [];
             <th class="px-4 py-3">การทำงาน</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-black/5">
+        <tbody class="divide-y divide-base-300">
           <?php foreach (($subjects ?? []) as $s): ?>
-            <tr class="hover:bg-sand-50" data-searchable="<?= e(strtolower(($s['subject_code'] ?? '') . ' ' . $s['title'] . ' ' . ($s['group_title'] ?? ''))) ?>">
-              <td class="px-4 py-3 text-xs text-ink-800/80">
-                <span class="rounded-xl border border-black/10 bg-white px-2.5 py-1">
+            <tr class="hover:bg-base-200" data-searchable="<?= e(strtolower(($s['subject_code'] ?? '') . ' ' . $s['title'] . ' ' . ($s['group_title'] ?? ''))) ?>">
+              <td class="px-4 py-3 text-xs text-base-content/80">
+                <span class="rounded-xl border border-base-300 bg-base-100 px-2.5 py-1">
                   <?= e((string)($s['subject_code'] ?? '-')) ?>
                 </span>
               </td>
-              <td class="px-4 py-3 text-xs text-ink-800/70">
+              <td class="px-4 py-3 text-xs text-base-content/70">
                 <?= e((string)($s['group_title'] ?? '-')) ?>
               </td>
               <td class="px-4 py-3">
                 <div class="font-medium"><?= e((string)$s['title']) ?></div>
                 <?php if (!empty($s['description'])): ?>
-                  <div class="mt-1 line-clamp-2 text-xs text-ink-800/60"><?= e((string)$s['description']) ?></div>
+                  <div class="mt-1 line-clamp-2 text-xs text-base-content/60"><?= e((string)$s['description']) ?></div>
                 <?php endif; ?>
               </td>
               <td class="px-4 py-3">
                 <?php if ((int)$s['is_active'] === 1): ?>
                   <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs text-emerald-800 ring-1 ring-emerald-200">🟢 เปิด</span>
                 <?php else: ?>
-                  <span class="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-700 ring-1 ring-black/10">⚪ ปิด</span>
+                  <span class="badge badge-sm border-none bg-base-300 text-base-content/70">⚪ ปิด</span>
                 <?php endif; ?>
               </td>
-              <td class="px-4 py-3 text-xs text-ink-800/60">
+              <td class="px-4 py-3 text-xs text-base-content/60">
                 <?= e((string)($s['updated_at'] ?: $s['created_at'])) ?>
               </td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap gap-2">
-                  <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/track-subjects?edit=<?= (int)$s['id'] ?>">✏️ แก้ไข</a>
+                  <a class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" href="/tracks/track-subjects?edit=<?= (int)$s['id'] ?>">✏️ แก้ไข</a>
                   <form method="post" data-confirm="ยืนยันลบวิชานี้?">
                     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                     <input type="hidden" name="action" value="delete" />
@@ -189,14 +189,14 @@ $groups = is_array($groups ?? null) ? $groups : [];
 
           <?php if (empty($subjects)): ?>
             <tr>
-              <td colspan="6" class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีวิชา—ลองเพิ่มวิชาแรกได้เลย</td>
+              <td colspan="6" class="px-4 py-10 text-center text-sm text-base-content/70">ยังไม่มีวิชา—ลองเพิ่มวิชาแรกได้เลย</td>
             </tr>
           <?php endif; ?>
         </tbody>
       </table>
     </div>
 
-    <p class="mt-3 text-xs text-ink-800/60">ข้อมูลถูกเก็บใน <span class="font-mono">sukhon_track.track_subjects</span></p>
+    <p class="mt-3 text-xs text-base-content/60">ข้อมูลถูกเก็บใน <span class="font-mono">sukhon_track.track_subjects</span></p>
   </section>
 </div>
 

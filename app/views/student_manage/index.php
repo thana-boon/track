@@ -22,15 +22,15 @@ $baseQuery = http_build_query(array_filter([
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="rounded-3xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">🧒 จัดการนักเรียนรายคน</h1>
-        <p class="mt-1 text-sm text-ink-800/70">ค้นหาเด็ก 1 คน แล้วดู “ลงทะเบียน” + “ผลเรียน (ผ่าน/ไม่ผ่าน)” ของปี/เทอมที่เลือก พร้อมลบ/เพิ่มลงทะเบียนได้</p>
+        <p class="mt-1 text-sm text-base-content/70">ค้นหาเด็ก 1 คน แล้วดู “ลงทะเบียน” + “ผลเรียน (ผ่าน/ไม่ผ่าน)” ของปี/เทอมที่เลือก พร้อมลบ/เพิ่มลงทะเบียนได้</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/register_track?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?><?= $selectedCode !== '' ? '&q=' . e(rawurlencode($selectedCode)) : '' ?>">🧾 ไปหน้าลงทะเบียน</a>
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5 <?= $selectedCode === '' ? 'pointer-events-none opacity-50' : '' ?>" href="/tracks/student_results?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&student_code=<?= e(rawurlencode($selectedCode)) ?>">📘 ดูสรุปผลรายวิชา</a>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200" href="/tracks/register_track?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?><?= $selectedCode !== '' ? '&q=' . e(rawurlencode($selectedCode)) : '' ?>">🧾 ไปหน้าลงทะเบียน</a>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200 <?= $selectedCode === '' ? 'pointer-events-none opacity-50' : '' ?>" href="/tracks/student_results?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&student_code=<?= e(rawurlencode($selectedCode)) ?>">📘 ดูสรุปผลรายวิชา</a>
       </div>
     </div>
 
@@ -42,11 +42,11 @@ $baseQuery = http_build_query(array_filter([
       <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
     <?php endif; ?>
 
-    <form class="mt-4 grid gap-3 rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4 md:grid-cols-6" method="get" action="<?= e((string)$basePath) ?>">
+    <form class="mt-4 grid gap-3 rounded-3xl border border-base-300 bg-base-200 p-4 md:grid-cols-6" method="get" action="<?= e((string)$basePath) ?>">
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ปีการศึกษา</label>
-        <select name="year_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+        <select name="year_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
           <?php foreach (($years ?? []) as $y): ?>
             <?php
               $id = (int)$y['id'];
@@ -60,7 +60,7 @@ $baseQuery = http_build_query(array_filter([
 
       <div>
         <label class="text-xs font-medium">เทอม</label>
-        <select name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+        <select name="term" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
           <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
           <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
         </select>
@@ -68,7 +68,7 @@ $baseQuery = http_build_query(array_filter([
 
       <div>
         <label class="text-xs font-medium">ชั้น</label>
-        <select name="class_level" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+        <select name="class_level" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
           <?php foreach (($classLevelOptions ?? []) as $val => $label): ?>
             <option value="<?= e((string)$val) ?>" <?= ((string)($filters['class_level'] ?? '') === (string)$val) ? 'selected' : '' ?>><?= e((string)$label) ?></option>
           <?php endforeach; ?>
@@ -77,28 +77,28 @@ $baseQuery = http_build_query(array_filter([
 
       <div>
         <label class="text-xs font-medium">ห้อง</label>
-        <input name="room" value="<?= e((string)($filters['room'] ?? '')) ?>" placeholder="เช่น 1" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+        <input name="room" value="<?= e((string)($filters['room'] ?? '')) ?>" placeholder="เช่น 1" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
       </div>
 
       <div class="md:col-span-2">
         <label class="text-xs font-medium">ค้นหา</label>
-        <input name="q" value="<?= e((string)($filters['q'] ?? '')) ?>" placeholder="เลขประจำตัว / ชื่อ / นามสกุล" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+        <input name="q" value="<?= e((string)($filters['q'] ?? '')) ?>" placeholder="เลขประจำตัว / ชื่อ / นามสกุล" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
       </div>
 
       <div class="md:col-span-6 flex flex-wrap items-center gap-2">
-        <button class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-ink-900 to-ink-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 ค้นหาเด็ก</button>
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/student_manage">🧹 ล้างตัวกรอง</a>
+        <button class="inline-flex items-center justify-center rounded-2xl bg-neutral px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-95">🔎 ค้นหาเด็ก</button>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200" href="/tracks/student_manage">🧹 ล้างตัวกรอง</a>
       </div>
     </form>
 
     <div class="mt-4 grid gap-4 lg:grid-cols-2 lg:items-start">
-      <div class="rounded-3xl border border-black/5 bg-white/75 overflow-hidden">
-        <div class="flex items-center justify-between gap-2 bg-sand-100 px-4 py-3">
+      <div class="rounded-3xl border border-base-300 bg-base-100/75 overflow-hidden">
+        <div class="flex items-center justify-between gap-2 bg-base-200 px-4 py-3">
           <div class="text-sm font-semibold">👥 รายชื่อเด็ก (เลือกได้)</div>
-          <div class="text-xs text-ink-800/60">แสดงสูงสุด 500</div>
+          <div class="text-xs text-base-content/60">แสดงสูงสุด 500</div>
         </div>
         <div class="max-h-[520px] overflow-auto">
-          <ul class="divide-y divide-black/5">
+          <ul class="divide-y divide-base-300">
             <?php foreach ($students as $s): ?>
               <?php
                 $code = (string)$s['student_code'];
@@ -108,46 +108,46 @@ $baseQuery = http_build_query(array_filter([
                 $active = ($selectedCode !== '' && $selectedCode === $code);
               ?>
               <li>
-                <a class="block px-4 py-3 hover:bg-sand-50 <?= $active ? 'bg-pastel-mint/40' : '' ?>" href="<?= e($href) ?>">
+                <a class="block px-4 py-3 hover:bg-base-200 <?= $active ? 'bg-pastel-mint/40' : '' ?>" href="<?= e($href) ?>">
                   <div class="flex flex-wrap items-center gap-2">
                     <div class="font-medium"><?= e($name) ?></div>
-                    <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= e($code) ?></span>
+                    <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300"><?= e($code) ?></span>
                   </div>
-                  <div class="mt-1 text-xs text-ink-800/60"><?= e($meta) ?></div>
+                  <div class="mt-1 text-xs text-base-content/60"><?= e($meta) ?></div>
                 </a>
               </li>
             <?php endforeach; ?>
 
             <?php if (empty($students)): ?>
-              <li class="px-4 py-10 text-center text-sm text-ink-800/70">ไม่พบรายชื่อนักเรียนตามตัวกรอง</li>
+              <li class="px-4 py-10 text-center text-sm text-base-content/70">ไม่พบรายชื่อนักเรียนตามตัวกรอง</li>
             <?php endif; ?>
           </ul>
         </div>
       </div>
 
-      <div class="rounded-3xl border border-black/5 bg-white/75 overflow-hidden">
-        <div class="bg-sand-100 px-4 py-3">
+      <div class="rounded-3xl border border-base-300 bg-base-100/75 overflow-hidden">
+        <div class="bg-base-200 px-4 py-3">
           <div class="text-sm font-semibold">📚 วิชาที่ลงทะเบียน/มีผลเรียน</div>
-          <div class="mt-0.5 text-xs text-ink-800/60">เลือกเด็กจากฝั่งซ้ายเพื่อแสดงรายละเอียด</div>
+          <div class="mt-0.5 text-xs text-base-content/60">เลือกเด็กจากฝั่งซ้ายเพื่อแสดงรายละเอียด</div>
         </div>
 
         <?php if (!$student): ?>
-          <div class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่ได้เลือกเด็ก</div>
+          <div class="px-4 py-10 text-center text-sm text-base-content/70">ยังไม่ได้เลือกเด็ก</div>
         <?php else: ?>
           <div class="px-4 py-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div class="text-base font-semibold"><?= e((string)$student['first_name'] . ' ' . (string)$student['last_name']) ?></div>
-                <div class="mt-1 text-xs text-ink-800/60"><?= e((string)$student['student_code']) ?> • <?= e((string)$student['class_level']) ?>/<?= e((string)$student['class_room']) ?> เลขที่ <?= e((string)$student['number_in_room']) ?></div>
+                <div class="mt-1 text-xs text-base-content/60"><?= e((string)$student['student_code']) ?> • <?= e((string)$student['class_level']) ?>/<?= e((string)$student['class_room']) ?> เลขที่ <?= e((string)$student['number_in_room']) ?></div>
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <a class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/register_track?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&q=<?= e(rawurlencode((string)$student['student_code'])) ?>">🧾 เพิ่ม/ลบลงทะเบียน</a>
-                <a class="rounded-2xl bg-ink-900 px-3 py-2 text-xs font-medium text-white hover:opacity-95" href="/tracks/report_statement?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&student_code=<?= e(rawurlencode((string)$student['student_code'])) ?>#preview">🖨️ ใบ Transcript</a>
+                <a class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" href="/tracks/register_track?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&q=<?= e(rawurlencode((string)$student['student_code'])) ?>">🧾 เพิ่ม/ลบลงทะเบียน</a>
+                <a class="rounded-2xl bg-neutral px-3 py-2 text-xs font-medium text-white hover:opacity-95" href="/tracks/report_statement?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&student_code=<?= e(rawurlencode((string)$student['student_code'])) ?>#preview">🖨️ ใบ Transcript</a>
               </div>
             </div>
           </div>
 
-          <div class="divide-y divide-black/5">
+          <div class="divide-y divide-base-300">
             <?php foreach ($subjectRows as $r): ?>
               <?php
                 $hasPass = (int)($r['has_pass'] ?? 0) === 1;
@@ -155,7 +155,7 @@ $baseQuery = http_build_query(array_filter([
                 $regId = (int)($r['reg_id'] ?? 0);
 
                 $status = 'รอผล';
-                $badge = 'bg-sand-100 text-ink-800/80 ring-black/5';
+                $badge = 'bg-base-200 text-base-content/80 ring-base-300';
                 if ($hasPass) {
                   $status = 'ผ่าน';
                   $badge = 'bg-emerald-100 text-emerald-800 ring-emerald-200';
@@ -192,13 +192,13 @@ $baseQuery = http_build_query(array_filter([
               <div class="px-4 py-3">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div class="min-w-[220px] flex-1">
-                    <div class="text-xs text-ink-800/60"><?= e($yearLabel) ?> • <?= e($groupTitle) ?></div>
+                    <div class="text-xs text-base-content/60"><?= e($yearLabel) ?> • <?= e($groupTitle) ?></div>
                     <div class="mt-1 font-medium"><?= e($line !== '' ? $line : '-') ?></div>
                     <?php if ($desc !== ''): ?>
-                      <div class="mt-1 text-xs text-ink-800/60"><?= e($desc) ?></div>
+                      <div class="mt-1 text-xs text-base-content/60"><?= e($desc) ?></div>
                     <?php endif; ?>
 
-                    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-800/60">
+                    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-base-content/60">
                       <div>ลงทะเบียนเมื่อ: <?= e($regAt !== '' ? $regAt : '-') ?></div>
                       <div>อัปเดตล่าสุด: <?= e($lastDate !== '' ? $lastDate : '-') ?></div>
                     </div>
@@ -218,7 +218,7 @@ $baseQuery = http_build_query(array_filter([
                           <button class="inline-flex items-center gap-1 whitespace-nowrap rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 hover:bg-red-100">🗑️ ลบทะเบียน</button>
                         </form>
                       <?php else: ?>
-                        <a class="inline-flex items-center gap-1 whitespace-nowrap rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" href="/tracks/register_track?year_id=<?= (int)$yid ?>&term=<?= (int)$trm ?>&q=<?= e(rawurlencode((string)$student['student_code'])) ?>">➕ เพิ่มทะเบียน</a>
+                        <a class="inline-flex items-center gap-1 whitespace-nowrap rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" href="/tracks/register_track?year_id=<?= (int)$yid ?>&term=<?= (int)$trm ?>&q=<?= e(rawurlencode((string)$student['student_code'])) ?>">➕ เพิ่มทะเบียน</a>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -227,7 +227,7 @@ $baseQuery = http_build_query(array_filter([
             <?php endforeach; ?>
 
             <?php if (empty($subjectRows)): ?>
-              <div class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่มีข้อมูลวิชา</div>
+              <div class="px-4 py-10 text-center text-sm text-base-content/70">ยังไม่มีข้อมูลวิชา</div>
             <?php endif; ?>
           </div>
         <?php endif; ?>

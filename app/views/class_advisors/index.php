@@ -10,16 +10,16 @@ $term = ($term === 2) ? 2 : 1;
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="rounded-3xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">👩‍🏫 กำหนดครูประจำชั้น</h1>
-        <p class="mt-1 text-sm text-ink-800/70">รายชื่อชั้นเรียนดึงจากฐานข้อมูลนักเรียน • เลือกผู้ใช้ที่ role = teacher หรือ admin</p>
+        <p class="mt-1 text-sm text-base-content/70">รายชื่อชั้นเรียนดึงจากฐานข้อมูลนักเรียน • เลือกผู้ใช้ที่ role = teacher หรือ admin</p>
       </div>
 
       <div class="flex items-center gap-2">
-        <label class="text-xs font-medium text-ink-800/70">ปีการศึกษา</label>
-        <select id="caYear" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('caYear'); var t=document.getElementById('caTerm'); if(!y||!t) return; location.href='/tracks/class_advisors?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
+        <label class="text-xs font-medium text-base-content/70">ปีการศึกษา</label>
+        <select id="caYear" class="rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('caYear'); var t=document.getElementById('caTerm'); if(!y||!t) return; location.href='/tracks/class_advisors?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
           <?php foreach ($years as $y): ?>
             <?php
               $id = (int)($y['id'] ?? 0);
@@ -30,8 +30,8 @@ $term = ($term === 2) ? 2 : 1;
           <?php endforeach; ?>
         </select>
 
-        <label class="text-xs font-medium text-ink-800/70">เทอม</label>
-        <select id="caTerm" class="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('caYear'); var t=document.getElementById('caTerm'); if(!y||!t) return; location.href='/tracks/class_advisors?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
+        <label class="text-xs font-medium text-base-content/70">เทอม</label>
+        <select id="caTerm" class="rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('caYear'); var t=document.getElementById('caTerm'); if(!y||!t) return; location.href='/tracks/class_advisors?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value);})()">
           <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
           <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
         </select>
@@ -46,10 +46,10 @@ $term = ($term === 2) ? 2 : 1;
       <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"><?= e((string)$error) ?></div>
     <?php endif; ?>
 
-    <div class="mt-4 overflow-hidden rounded-3xl border border-black/5 bg-white/80">
+    <div class="mt-4 overflow-hidden rounded-3xl border border-base-300 bg-base-100/80">
       <div class="overflow-auto">
-        <table class="min-w-full bg-white text-sm">
-          <thead class="bg-sand-50 text-left text-xs text-ink-800/70">
+        <table class="min-w-full bg-base-100 text-sm">
+          <thead class="bg-base-200 text-left text-xs text-base-content/70">
             <tr>
               <th class="px-4 py-3">ชั้นเรียน</th>
               <th class="px-4 py-3">จำนวนนักเรียน</th>
@@ -57,7 +57,7 @@ $term = ($term === 2) ? 2 : 1;
               <th class="px-4 py-3">บันทึก</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-black/5">
+          <tbody class="divide-y divide-base-300">
             <?php foreach ($classes as $c): ?>
               <?php
                 $level = (string)($c['class_level'] ?? '');
@@ -67,12 +67,12 @@ $term = ($term === 2) ? 2 : 1;
                 $advisor = $advisorMap[$key] ?? null;
                 $selectedTeacherId = is_array($advisor) ? (int)($advisor['teacher_user_id'] ?? 0) : 0;
               ?>
-              <tr class="hover:bg-sand-50">
+              <tr class="hover:bg-base-200">
                 <td class="px-4 py-3">
                   <div class="font-medium"><?= e($level) ?>/<?= (int)$room ?></div>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="inline-flex items-center rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= $count ?> คน</span>
+                  <span class="inline-flex items-center rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300"><?= $count ?> คน</span>
                 </td>
                 <td class="px-4 py-3">
                   <form class="flex items-center gap-2" method="post">
@@ -83,7 +83,7 @@ $term = ($term === 2) ? 2 : 1;
                     <input type="hidden" name="class_level" value="<?= e($level) ?>" />
                     <input type="hidden" name="class_room" value="<?= (int)$room ?>" />
 
-                    <select name="teacher_user_id" class="min-w-[240px] rounded-xl border border-black/10 bg-white px-3 py-2 text-sm outline-none focus:border-calm-500">
+                    <select name="teacher_user_id" class="min-w-[240px] rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm outline-none focus:border-calm-500">
                       <option value="0" <?= $selectedTeacherId === 0 ? 'selected' : '' ?>>— ยังไม่กำหนด —</option>
                       <?php foreach ($teachers as $t): ?>
                         <?php
@@ -99,10 +99,10 @@ $term = ($term === 2) ? 2 : 1;
                       <?php endforeach; ?>
                     </select>
 
-                    <button class="rounded-2xl bg-calm-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-calm-500">💾 บันทึก</button>
+                    <button class="rounded-2xl bg-neutral px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90">💾 บันทึก</button>
                   </form>
                 </td>
-                <td class="px-4 py-3 text-xs text-ink-800/60">
+                <td class="px-4 py-3 text-xs text-base-content/60">
                   <?php if (is_array($advisor) && $selectedTeacherId > 0): ?>
                     กำหนดแล้ว
                   <?php else: ?>
@@ -114,7 +114,7 @@ $term = ($term === 2) ? 2 : 1;
 
             <?php if (empty($classes)): ?>
               <tr>
-                <td colspan="4" class="px-4 py-10 text-center text-sm text-ink-800/70">ยังไม่พบข้อมูลชั้นเรียนในปีการศึกษานี้</td>
+                <td colspan="4" class="px-4 py-10 text-center text-sm text-base-content/70">ยังไม่พบข้อมูลชั้นเรียนในปีการศึกษานี้</td>
               </tr>
             <?php endif; ?>
           </tbody>
@@ -122,7 +122,7 @@ $term = ($term === 2) ? 2 : 1;
       </div>
 
       <?php if (empty($teachers)): ?>
-        <div class="border-t border-black/5 bg-white px-4 py-3 text-xs text-ink-800/60">
+        <div class="border-t border-base-300 bg-base-100 px-4 py-3 text-xs text-base-content/60">
           หมายเหตุ: ยังไม่มีผู้ใช้ที่ role = teacher หรือ admin • ไปที่หน้า “ผู้ใช้” เพื่อสร้างผู้ใช้ก่อน
         </div>
       <?php endif; ?>

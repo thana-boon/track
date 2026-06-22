@@ -20,15 +20,15 @@ $baseQuery = http_build_query(array_filter([
 ?>
 
 <div class="grid gap-6">
-  <section class="rounded-3xl border border-black/5 bg-white/80 p-5 shadow-sm backdrop-blur">
+  <section class="rounded-3xl border border-base-300 bg-base-100/80 p-5 shadow-sm backdrop-blur">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 class="text-xl font-semibold tracking-tight">➕ สร้างรอบเรียน</h1>
-        <p class="mt-1 text-sm text-ink-800/70">เลือกวิชา/วันที่/รายชื่อนักเรียน แล้วสร้างรอบเรียนเพื่อไปเช็คชื่อ</p>
+        <p class="mt-1 text-sm text-base-content/70">เลือกวิชา/วันที่/รายชื่อนักเรียน แล้วสร้างรอบเรียนเพื่อไปเช็คชื่อ</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <a class="rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5" href="/tracks/class_attendance?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>">← ตารางเรียนตามวัน</a>
+        <a class="rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200" href="/tracks/class_attendance?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>">← ตารางเรียนตามวัน</a>
       </div>
     </div>
 
@@ -52,7 +52,7 @@ $baseQuery = http_build_query(array_filter([
       <div class="grid gap-3 md:grid-cols-3">
         <div>
           <label class="text-xs font-medium">ปีการศึกษา</label>
-          <select id="attCreateYear" name="year_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attCreateYear'); var t=document.getElementById('attCreateTerm'); if(!y||!t) return; location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value)+'&subject_id='+encodeURIComponent(y.form.subject_id.value);})()">
+          <select id="attCreateYear" name="year_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attCreateYear'); var t=document.getElementById('attCreateTerm'); if(!y||!t) return; location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value)+'&subject_id='+encodeURIComponent(y.form.subject_id.value);})()">
             <?php foreach (($years ?? []) as $y): ?>
               <?php
                 $id = (int)($y['id'] ?? 0);
@@ -66,7 +66,7 @@ $baseQuery = http_build_query(array_filter([
 
         <div>
           <label class="text-xs font-medium">เทอม</label>
-          <select id="attCreateTerm" name="term" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attCreateYear'); var t=document.getElementById('attCreateTerm'); if(!y||!t) return; location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value)+'&subject_id='+encodeURIComponent(y.form.subject_id.value);})()">
+          <select id="attCreateTerm" name="term" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="(function(){var y=document.getElementById('attCreateYear'); var t=document.getElementById('attCreateTerm'); if(!y||!t) return; location.href='/tracks/class_attendance_create?year_id='+encodeURIComponent(y.value)+'&term='+encodeURIComponent(t.value)+'&subject_id='+encodeURIComponent(y.form.subject_id.value);})()">
             <option value="1" <?= $term === 1 ? 'selected' : '' ?>>เทอม 1</option>
             <option value="2" <?= $term === 2 ? 'selected' : '' ?>>เทอม 2</option>
           </select>
@@ -74,7 +74,7 @@ $baseQuery = http_build_query(array_filter([
 
         <div>
           <label class="text-xs font-medium">วิชา</label>
-          <select name="subject_id" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&subject_id='+encodeURIComponent(this.value)">
+          <select name="subject_id" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='/tracks/class_attendance_create?year_id=<?= (int)$yearId ?>&term=<?= (int)$term ?>&subject_id='+encodeURIComponent(this.value)">
             <?php
               $grouped = [];
               foreach (($subjects ?? []) as $s) {
@@ -102,21 +102,21 @@ $baseQuery = http_build_query(array_filter([
 
       <div class="grid gap-3 md:grid-cols-2">
         <div>
-          <label class="text-xs font-medium">วันที่เรียน <span class="text-ink-800/50">(เพิ่มได้หลายวัน)</span></label>
+          <label class="text-xs font-medium">วันที่เรียน <span class="text-base-content/50">(เพิ่มได้หลายวัน)</span></label>
           <div id="sessionDatesContainer" class="mt-1 grid gap-2">
             <div class="date-row flex items-center gap-2">
-              <input type="text" class="thai-dp-text flex-1 rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เลือกวันที่..." data-hidden-id="dp_1" />
+              <input type="text" class="thai-dp-text flex-1 rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เลือกวันที่..." data-hidden-id="dp_1" />
               <input type="hidden" id="dp_1" name="session_dates[]" value="" />
-              <button type="button" class="remove-date rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-red-600 hover:bg-red-50 hidden">✕</button>
+              <button type="button" class="remove-date rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hidden">✕</button>
             </div>
           </div>
           <button type="button" id="addDateBtn" class="mt-2 rounded-2xl border border-dashed border-calm-400 bg-calm-50 px-3 py-2 text-xs text-calm-700 hover:bg-calm-100">+ เพิ่มวันที่เรียน</button>
-          <div class="mt-1 text-[11px] text-ink-800/60">ถ้าวิชานี้เรียนหลายวัน เช่น วันที่ 10 กับ 17 ให้กด "+ เพิ่มวันที่" แล้วใส่ให้ครบ</div>
+          <div class="mt-1 text-[11px] text-base-content/60">ถ้าวิชานี้เรียนหลายวัน เช่น วันที่ 10 กับ 17 ให้กด "+ เพิ่มวันที่" แล้วใส่ให้ครบ</div>
         </div>
 
         <div>
           <label class="text-xs font-medium">หมายเหตุ (ไม่บังคับ)</label>
-          <input name="note" value="<?= e((string)($note ?? '')) ?>" placeholder="เช่น กลุ่มเช้า / กลุ่มบ่าย" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
+          <input name="note" value="<?= e((string)($note ?? '')) ?>" placeholder="เช่น กลุ่มเช้า / กลุ่มบ่าย" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" />
         </div>
       </div>
 
@@ -155,8 +155,8 @@ $baseQuery = http_build_query(array_filter([
           function navBtn(txt, cb) {
             var b = document.createElement('button');
             b.type = 'button'; b.textContent = txt;
-            b.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px 10px;border-radius:8px;font-size:13px;color:#273156;line-height:1;';
-            b.onmouseover = function () { this.style.background = '#f6f3eb'; };
+            b.style.cssText = 'background:none;border:none;cursor:pointer;padding:4px 10px;border-radius:8px;font-size:13px;color:#291334;line-height:1;';
+            b.onmouseover = function () { this.style.background = '#efeae6'; };
             b.onmouseout  = function () { this.style.background = 'none'; };
             b.addEventListener('click', function (e) { e.stopPropagation(); cb(); buildCalendar(popup, state, hiddenEl, textEl); });
             return b;
@@ -164,7 +164,7 @@ $baseQuery = http_build_query(array_filter([
 
           hdr.appendChild(navBtn('◀', function () { state.viewMonth--; if (state.viewMonth < 0) { state.viewMonth = 11; state.viewYear--; } }));
           var lbl = document.createElement('span');
-          lbl.style.cssText = 'font-weight:700;font-size:13px;color:#11172a;';
+          lbl.style.cssText = 'font-weight:700;font-size:13px;color:#291334;';
           lbl.textContent = MONTHS_TH[m] + ' ' + (y + 543);
           hdr.appendChild(lbl);
           hdr.appendChild(navBtn('▶', function () { state.viewMonth++; if (state.viewMonth > 11) { state.viewMonth = 0; state.viewYear++; } }));
@@ -176,7 +176,7 @@ $baseQuery = http_build_query(array_filter([
 
           DAYS_TH.forEach(function (d) {
             var c = document.createElement('div');
-            c.style.cssText = 'text-align:center;padding:4px 0;font-size:11px;font-weight:600;color:#273156;opacity:0.5;';
+            c.style.cssText = 'text-align:center;padding:4px 0;font-size:11px;font-weight:600;color:#291334;opacity:0.5;';
             c.textContent = d; grid.appendChild(c);
           });
 
@@ -191,8 +191,8 @@ $baseQuery = http_build_query(array_filter([
               if (iso === selIso)    btn.style.cssText = base + 'background:#2b7f79;color:white;font-weight:700;';
               else if (iso === todayIso) btn.style.cssText = base + 'background:#e6f3f2;color:#2b7f79;font-weight:700;';
               else {
-                btn.style.cssText = base + 'background:none;color:#1b2542;';
-                btn.onmouseover = function () { this.style.background = '#f6f3eb'; };
+                btn.style.cssText = base + 'background:none;color:#291334;';
+                btn.onmouseover = function () { this.style.background = '#efeae6'; };
                 btn.onmouseout  = function () { this.style.background = 'none'; };
               }
               btn.addEventListener('click', function (e) {
@@ -256,9 +256,9 @@ $baseQuery = http_build_query(array_filter([
           var row = document.createElement('div');
           row.className = 'date-row flex items-center gap-2';
           row.innerHTML =
-            '<input type="text" class="thai-dp-text flex-1 rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เลือกวันที่..." data-hidden-id="' + id + '" />'
+            '<input type="text" class="thai-dp-text flex-1 rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" placeholder="เลือกวันที่..." data-hidden-id="' + id + '" />'
             + '<input type="hidden" id="' + id + '" name="session_dates[]" value="" />'
-            + '<button type="button" class="remove-date rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-red-600 hover:bg-red-50">✕</button>';
+            + '<button type="button" class="remove-date rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm text-red-600 hover:bg-red-50">✕</button>';
           return row;
         }
 
@@ -292,20 +292,20 @@ $baseQuery = http_build_query(array_filter([
       </script>
 
       <div class="grid gap-3 lg:grid-cols-3">
-        <div class="lg:col-span-2 rounded-3xl border border-black/5 bg-white/70 p-3">
+        <div class="lg:col-span-2 rounded-3xl border border-base-300 bg-base-100/70 p-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="text-xs font-semibold">👥 เลือกนักเรียน</div>
             <div class="flex flex-wrap items-center gap-2">
-              <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" onclick="(function(){document.querySelectorAll('input[name=\'student_codes[]\']').forEach(function(el){el.checked=true;});})();">เลือกทั้งหมด</button>
-              <button type="button" class="rounded-2xl border border-black/10 bg-white px-3 py-2 text-xs hover:bg-black/5" onclick="(function(){document.querySelectorAll('input[name=\'student_codes[]\']').forEach(function(el){el.checked=false;});})();">เอาออกทั้งหมด</button>
-              <div class="text-[11px] text-ink-800/60">ติ๊กได้หลายคน • แสดงสูงสุด 800</div>
+              <button type="button" class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" onclick="(function(){document.querySelectorAll('input[name=\'student_codes[]\']').forEach(function(el){el.checked=true;});})();">เลือกทั้งหมด</button>
+              <button type="button" class="rounded-2xl border border-base-300 bg-base-100 px-3 py-2 text-xs hover:bg-base-200" onclick="(function(){document.querySelectorAll('input[name=\'student_codes[]\']').forEach(function(el){el.checked=false;});})();">เอาออกทั้งหมด</button>
+              <div class="text-[11px] text-base-content/60">ติ๊กได้หลายคน • แสดงสูงสุด 800</div>
             </div>
           </div>
 
           <div class="mt-3 grid gap-3 md:grid-cols-6">
             <div class="md:col-span-2">
               <label class="text-xs font-medium">ชั้น</label>
-              <select class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&class_level='+encodeURIComponent(this.value)">
+              <select class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" onchange="location.href='<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&class_level='+encodeURIComponent(this.value)">
                 <?php foreach (($classLevelOptions ?? []) as $val => $label): ?>
                   <option value="<?= e((string)$val) ?>" <?= ((string)($filters['class_level'] ?? '') === (string)$val) ? 'selected' : '' ?>><?= e((string)$label) ?></option>
                 <?php endforeach; ?>
@@ -314,53 +314,53 @@ $baseQuery = http_build_query(array_filter([
 
             <div class="md:col-span-2">
               <label class="text-xs font-medium">ห้อง</label>
-              <input value="<?= e((string)($filters['room'] ?? '')) ?>" placeholder="เช่น 1" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onkeydown="if(event.key==='Enter'){event.preventDefault();location.href='<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&room='+encodeURIComponent(this.value)}" />
+              <input value="<?= e((string)($filters['room'] ?? '')) ?>" placeholder="เช่น 1" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" onkeydown="if(event.key==='Enter'){event.preventDefault();location.href='<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&room='+encodeURIComponent(this.value)}" />
             </div>
 
             <div class="md:col-span-2">
               <label class="text-xs font-medium">ค้นหา</label>
-              <input value="<?= e((string)($filters['q'] ?? '')) ?>" placeholder="เลขประจำตัว / ชื่อ / นามสกุล" class="mt-1 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500" onkeydown="if(event.key==='Enter'){event.preventDefault();location.href='<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&q='+encodeURIComponent(this.value)}" />
+              <input value="<?= e((string)($filters['q'] ?? '')) ?>" placeholder="เลขประจำตัว / ชื่อ / นามสกุล" class="mt-1 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500" onkeydown="if(event.key==='Enter'){event.preventDefault();location.href='<?= e((string)$basePath) ?>?<?= e((string)$baseQuery) ?>&q='+encodeURIComponent(this.value)}" />
             </div>
           </div>
 
-          <div class="mt-3 max-h-[420px] overflow-auto rounded-2xl border border-black/5 bg-white">
-            <ul class="divide-y divide-black/5">
+          <div class="mt-3 max-h-[420px] overflow-auto rounded-2xl border border-base-300 bg-base-100">
+            <ul class="divide-y divide-base-300">
               <?php foreach ($students as $st): ?>
                 <?php
                   $code = (string)($st['student_code'] ?? '');
                   $name = (string)($st['first_name'] ?? '') . ' ' . (string)($st['last_name'] ?? '');
                   $meta = (string)($st['class_level'] ?? '') . '/' . (string)($st['class_room'] ?? '') . ' เลขที่ ' . (string)($st['number_in_room'] ?? '');
                 ?>
-                <li class="px-3 py-2 hover:bg-sand-50">
+                <li class="px-3 py-2 hover:bg-base-200">
                   <label class="flex items-start gap-3">
-                    <input class="mt-1 h-4 w-4 rounded border-black/20" type="checkbox" name="student_codes[]" value="<?= e($code) ?>" />
+                    <input class="mt-1 h-4 w-4 rounded border-base-300" type="checkbox" name="student_codes[]" value="<?= e($code) ?>" />
                     <span class="block flex-1">
                       <span class="flex flex-wrap items-center gap-2">
                         <span class="font-medium"><?= e($name) ?></span>
-                        <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-ink-800/70 ring-1 ring-black/5"><?= e($code) ?></span>
+                        <span class="rounded-full bg-pastel-sky/60 px-2.5 py-1 text-xs text-base-content/70 ring-1 ring-base-300"><?= e($code) ?></span>
                       </span>
-                      <span class="mt-1 block text-xs text-ink-800/60"><?= e($meta) ?></span>
+                      <span class="mt-1 block text-xs text-base-content/60"><?= e($meta) ?></span>
                     </span>
                   </label>
                 </li>
               <?php endforeach; ?>
 
               <?php if (empty($students)): ?>
-                <li class="px-4 py-10 text-center text-sm text-ink-800/70">ไม่พบรายชื่อนักเรียนตามตัวกรอง</li>
+                <li class="px-4 py-10 text-center text-sm text-base-content/70">ไม่พบรายชื่อนักเรียนตามตัวกรอง</li>
               <?php endif; ?>
             </ul>
           </div>
         </div>
 
-        <div class="rounded-3xl border border-black/5 bg-gradient-to-b from-sand-50 to-pastel-sky/20 p-4">
+        <div class="rounded-3xl border border-base-300 bg-base-200 p-4">
           <div class="text-sm font-semibold">📥 Import รหัสนักเรียน</div>
-          <p class="mt-1 text-xs text-ink-800/60">ใส่ 1 บรรทัดต่อ 1 คน (ใส่แค่รหัส หรือ ใส่ชื่อแล้วตามด้วยรหัสก็ได้)</p>
+          <p class="mt-1 text-xs text-base-content/60">ใส่ 1 บรรทัดต่อ 1 คน (ใส่แค่รหัส หรือ ใส่ชื่อแล้วตามด้วยรหัสก็ได้)</p>
 
           <?php if (!empty($classGroups)): ?>
           <div class="mt-3">
             <label class="text-xs font-medium">📂 เลือกจากกลุ่มเรียนที่บันทึกไว้</label>
             <div class="mt-1 flex flex-wrap items-center gap-2">
-              <select id="classGroupPicker" class="flex-1 min-w-0 rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500">
+              <select id="classGroupPicker" class="flex-1 min-w-0 rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500">
                 <option value="">— เลือกกลุ่ม —</option>
                 <?php foreach ($classGroups as $cg): ?>
                   <?php
@@ -372,14 +372,14 @@ $baseQuery = http_build_query(array_filter([
                   </option>
                 <?php endforeach; ?>
               </select>
-              <button type="button" id="appendGroupBtn" class="shrink-0 rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm hover:bg-black/5">
+              <button type="button" id="appendGroupBtn" class="shrink-0 rounded-2xl border border-base-300 bg-base-100 px-4 py-2.5 text-sm hover:bg-base-200">
                 ➕ เพิ่มต่อท้าย
               </button>
             </div>
-            <p class="mt-1 text-[11px] text-ink-800/60">เลือกกลุ่ม = แทนที่รหัสในกล่องอัตโนมัติ — «เพิ่มต่อท้าย» รวมเข้ากัน | <a class="underline text-calm-700" href="/tracks/class-groups">จัดการกลุ่มเรียน</a></p>
+            <p class="mt-1 text-[11px] text-base-content/60">เลือกกลุ่ม = แทนที่รหัสในกล่องอัตโนมัติ — «เพิ่มต่อท้าย» รวมเข้ากัน | <a class="underline text-calm-700" href="/tracks/class-groups">จัดการกลุ่มเรียน</a></p>
           </div>
           <?php else: ?>
-          <p class="mt-2 text-xs text-ink-800/50">ยังไม่มีกลุ่มเรียน — <a class="underline text-calm-700" href="/tracks/class-groups">สร้างกลุ่มเรียน</a> เพื่อเลือกได้ที่นี่</p>
+          <p class="mt-2 text-xs text-base-content/50">ยังไม่มีกลุ่มเรียน — <a class="underline text-calm-700" href="/tracks/class-groups">สร้างกลุ่มเรียน</a> เพื่อเลือกได้ที่นี่</p>
           <?php endif; ?>
 
           <textarea
@@ -387,7 +387,7 @@ $baseQuery = http_build_query(array_filter([
             name="student_codes_text"
             rows="10"
             placeholder="ตัวอย่าง:&#10;65001&#10;สมชาย ใจดี 65002&#10;65003"
-            class="mt-3 w-full rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-calm-500"
+            class="mt-3 w-full rounded-2xl border border-base-300 bg-base-100 px-3 py-2.5 text-sm outline-none focus:border-calm-500"
           ><?= e((string)($studentCodesText ?? '')) ?></textarea>
 
           <script>
@@ -416,10 +416,10 @@ $baseQuery = http_build_query(array_filter([
           </script>
 
           <div class="mt-4">
-            <button class="w-full rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500">✅ สร้างรอบเรียน</button>
+            <button class="w-full rounded-2xl bg-neutral px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:opacity-90">✅ สร้างรอบเรียน</button>
           </div>
 
-          <div class="mt-3 text-[11px] text-ink-800/60">หมายเหตุ: ถ้าเลือก “ติ๊กชื่อ” และ “วางรหัส” พร้อมกัน ระบบจะรวมให้ แล้วตัดซ้ำอัตโนมัติ</div>
+          <div class="mt-3 text-[11px] text-base-content/60">หมายเหตุ: ถ้าเลือก “ติ๊กชื่อ” และ “วางรหัส” พร้อมกัน ระบบจะรวมให้ แล้วตัดซ้ำอัตโนมัติ</div>
         </div>
       </div>
     </form>
