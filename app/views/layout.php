@@ -2,12 +2,14 @@
 $user = auth_user();
 ?>
 <!doctype html>
-<html lang="th">
+<html lang="th" data-theme="cupcake">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title><?= e((string)$title) ?></title>
   <link rel="icon" href="/tracks/favicon.ico" />
+  <!-- daisyUI (prebuilt, no build step) + theme cupcake -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
@@ -15,35 +17,30 @@ $user = auth_user();
       theme: {
         extend: {
           colors: {
-            ink: {
-              950: '#0b1020',
-              900: '#11172a',
-              800: '#1b2542',
-              700: '#273156',
-              100: '#eef2ff'
-            },
-            pastel: {
-              mint: '#d7f7ef',
-              sky: '#dbeafe',
-              lilac: '#ede9fe',
-              peach: '#ffe4e6',
-              lemon: '#fef9c3'
-            },
-            calm: {
-              700: '#1f6f6a',
-              600: '#2b7f79',
-              500: '#3b918a',
-              100: '#e6f3f2'
-            },
-            sand: {
-              50: '#fcfbf8',
-              100: '#f6f3eb',
-              200: '#efe7d8'
-            },
-            blush: {
-              600: '#c24174',
-              50: '#fff1f2'
-            }
+            // daisyUI semantic tokens — อ้างอิง CSS variables ของ theme cupcake (เปลี่ยน theme แล้วสีจะตามทันที)
+            primary: 'hsl(var(--p))',
+            'primary-content': 'hsl(var(--pc))',
+            secondary: 'hsl(var(--s))',
+            'secondary-content': 'hsl(var(--sc))',
+            accent: 'hsl(var(--a))',
+            'accent-content': 'hsl(var(--ac))',
+            neutral: 'hsl(var(--n))',
+            'neutral-content': 'hsl(var(--nc))',
+            'base-100': 'hsl(var(--b1))',
+            'base-200': 'hsl(var(--b2))',
+            'base-300': 'hsl(var(--b3))',
+            'base-content': 'hsl(var(--bc))',
+            info: 'hsl(var(--in))',
+            success: 'hsl(var(--su))',
+            warning: 'hsl(var(--wa))',
+            error: 'hsl(var(--er))',
+
+            // legacy tokens — remap เป็นพาเลตต์ cupcake ชั่วคราว ระหว่างทยอยแปลงแต่ละหน้าเป็น daisyUI
+            ink:    { 950: '#1f0f29', 900: '#291334', 800: '#3b2147', 700: '#4e2f5b', 100: '#f3eef6' },
+            pastel: { mint: '#d9f3ee', sky: '#d4eef0', lilac: '#fbe7ef', peach: '#fbe2d4', lemon: '#fdeec9' },
+            calm:   { 700: '#3a9aa0', 600: '#4fb3b8', 500: '#65c3c8', 100: '#e2f4f5' },
+            sand:   { 50: '#faf7f5', 100: '#efeae6', 200: '#e7e2df' },
+            blush:  { 600: '#ef9fbc', 50: '#fbe7ef' }
           }
         }
       }
@@ -190,21 +187,21 @@ $user = auth_user();
     to   { opacity: 1; transform: translateY(0)  scaleY(1); }
   }
 </style>
-<body class="min-h-screen bg-gradient-to-b from-pastel-lilac/40 via-sand-50 to-pastel-mint/30 text-ink-900">
+<body class="min-h-screen bg-base-200 text-base-content">
 
   <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
-    <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-pastel-peach/40 blur-3xl"></div>
-    <div class="absolute top-40 -right-24 h-80 w-80 rounded-full bg-pastel-sky/45 blur-3xl"></div>
-    <div class="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-pastel-lemon/35 blur-3xl"></div>
+    <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-secondary/25 blur-3xl"></div>
+    <div class="absolute top-40 -right-24 h-80 w-80 rounded-full bg-primary/25 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-accent/20 blur-3xl"></div>
   </div>
 
-  <header class="sticky top-0 z-10 border-b border-black/5 bg-white/75 backdrop-blur">
+  <header class="sticky top-0 z-10 border-b border-base-300 bg-base-100/80 backdrop-blur">
     <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
       <a class="group flex items-center gap-2 font-semibold tracking-tight" href="/tracks/">
-        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-pastel-sky to-pastel-mint shadow-sm ring-1 ring-black/5">🏃</span>
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary text-primary-content shadow-sm ring-1 ring-black/5">🏃</span>
         <span class="leading-none">
-          <span class="block text-sm text-ink-800/70">Sukhon</span>
-          <span class="block -mt-0.5 text-base text-ink-900">Track</span>
+          <span class="block text-sm text-base-content/60">Sukhon</span>
+          <span class="block -mt-0.5 text-base text-base-content">Track</span>
         </span>
       </a>
 
@@ -216,47 +213,47 @@ $user = auth_user();
   			  <?php if ($role === 'admin'): ?>
 
               <div class="relative shrink-0" data-dd="nav-data">
-                <button type="button" onclick="navToggle('nav-data')" class="rounded-xl border border-black/5 bg-sand-100/70 px-3 py-2 hover:bg-black/5 focus:outline-none">📋 ข้อมูล</button>
-                <div id="nav-data" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/students">📋 รายชื่อ</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/academic_year">📅 ปีการศึกษา</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_advisors">👩‍🏫 ครูประจำชั้น</a>
+                <button type="button" onclick="navToggle('nav-data')" class="btn btn-sm rounded-xl border-base-300 bg-base-100 font-normal shadow-sm hover:bg-base-300">📋 ข้อมูล</button>
+                <div id="nav-data" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/students">📋 รายชื่อ</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/academic_year">📅 ปีการศึกษา</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/class_advisors">👩‍🏫 ครูประจำชั้น</a>
                 </div>
               </div>
 
               <div class="relative shrink-0" data-dd="nav-track">
-                <button type="button" onclick="navToggle('nav-track')" class="rounded-xl border border-black/5 bg-pastel-mint/45 px-3 py-2 hover:bg-black/5 focus:outline-none">🧩 วิชา/ลงทะเบียน</button>
-                <div id="nav-track" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/track-groups">🧩 กลุ่ม Track</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/track-subjects">🧩 วิชา</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/register_track">🧾 ลงทะเบียน</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/student_manage">🧒 จัดการรายคน</a>
+                <button type="button" onclick="navToggle('nav-track')" class="btn btn-sm rounded-xl border-none bg-primary/15 font-normal shadow-sm hover:bg-primary/25">🧩 วิชา/ลงทะเบียน</button>
+                <div id="nav-track" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/track-groups">🧩 กลุ่ม Track</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/track-subjects">🧩 วิชา</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/register_track">🧾 ลงทะเบียน</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/student_manage">🧒 จัดการรายคน</a>
                 </div>
               </div>
 
               <div class="relative shrink-0" data-dd="nav-att">
-                <button type="button" onclick="navToggle('nav-att')" class="rounded-xl border border-black/5 bg-pastel-sky/45 px-3 py-2 hover:bg-black/5 focus:outline-none">📝 เช็คชื่อ</button>
-                <div id="nav-att" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_attendance_create">➕ สร้างรอบเรียน</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class-groups">👥 กลุ่มเรียน</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_attendance">📅 ตารางเรียนตามวัน</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/class_room">🏫 ดูนักเรียนรายห้อง</a>
+                <button type="button" onclick="navToggle('nav-att')" class="btn btn-sm rounded-xl border-none bg-secondary/15 font-normal shadow-sm hover:bg-secondary/25">📝 เช็คชื่อ</button>
+                <div id="nav-att" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/class_attendance_create">➕ สร้างรอบเรียน</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/class-groups">👥 กลุ่มเรียน</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/class_attendance">📅 ตารางเรียนตามวัน</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/class_room">🏫 ดูนักเรียนรายห้อง</a>
                 </div>
               </div>
 
               <div class="relative shrink-0" data-dd="nav-report">
-                <button type="button" onclick="navToggle('nav-report')" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">🖨️ รายงาน</button>
-                <div id="nav-report" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/report_statement">🖨️ ใบ Transcript</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/activity_logs">📜 Activity log</a>
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/backup_restore">💾 Backup/Restore</a>
+                <button type="button" onclick="navToggle('nav-report')" class="btn btn-sm rounded-xl border-none bg-accent/15 font-normal shadow-sm hover:bg-accent/25">🖨️ รายงาน</button>
+                <div id="nav-report" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/report_statement">🖨️ ใบ Transcript</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/activity_logs">📜 Activity log</a>
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/backup_restore">💾 Backup/Restore</a>
                 </div>
               </div>
 
               <div class="relative shrink-0" data-dd="nav-users">
-                <button type="button" onclick="navToggle('nav-users')" class="rounded-xl border border-black/5 bg-pastel-lilac/40 px-3 py-2 hover:bg-black/5 focus:outline-none">👤 ผู้ใช้</button>
-                <div id="nav-users" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-md">
-                  <a class="block px-3 py-2 text-sm hover:bg-black/5" href="/tracks/users">👤 ผู้ใช้</a>
+                <button type="button" onclick="navToggle('nav-users')" class="btn btn-sm rounded-xl border-base-300 bg-base-100 font-normal shadow-sm hover:bg-base-300">👤 ผู้ใช้</button>
+                <div id="nav-users" class="nav-dd hidden absolute left-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
+                  <a class="block px-3 py-2 text-sm hover:bg-base-200" href="/tracks/users">👤 ผู้ใช้</a>
                 </div>
               </div>
 			  <?php else: ?>
@@ -280,11 +277,11 @@ $user = auth_user();
       ?>
 
       <?php if ($role === 'student'): ?>
-        <a class="shrink-0 rounded-xl border border-black/5 bg-pastel-sky/45 px-3 py-2 hover:bg-black/5" href="/tracks/student_results">📘 ผลการเรียนของฉัน</a>
+        <a class="btn btn-sm shrink-0 rounded-xl border-none bg-secondary/15 font-normal shadow-sm hover:bg-secondary/25" href="/tracks/student_results">📘 ผลการเรียนของฉัน</a>
       <?php else: ?>
-        <a class="shrink-0 rounded-xl border border-black/5 bg-pastel-sky/45 px-3 py-2 hover:bg-black/5" href="/tracks/class_attendance">📅 ตารางเรียนตามวัน</a>
+        <a class="btn btn-sm shrink-0 rounded-xl border-none bg-secondary/15 font-normal shadow-sm hover:bg-secondary/25" href="/tracks/class_attendance">📅 ตารางเรียนตามวัน</a>
         <?php if ($showRoom): ?>
-          <a class="shrink-0 rounded-xl border border-black/5 bg-sand-100/70 px-3 py-2 hover:bg-black/5" href="/tracks/class_room">🏫 นักเรียนประจำชั้น</a>
+          <a class="btn btn-sm shrink-0 rounded-xl border-base-300 bg-base-100 font-normal shadow-sm hover:bg-base-300" href="/tracks/class_room">🏫 นักเรียนประจำชั้น</a>
         <?php endif; ?>
       <?php endif; ?>
 			  <?php endif; ?>
@@ -292,13 +289,13 @@ $user = auth_user();
           </nav>
 
           <div class="flex items-center justify-between gap-2 md:justify-end">
-            <span class="truncate text-sm text-ink-800/70 md:max-w-[220px]"><?= e($user['displayname'] ?? $user['username']) ?></span>
-            <a class="shrink-0 rounded-xl px-3 py-2 text-sm text-red-700 hover:bg-red-50" href="/tracks/logout">🚪 ออกจากระบบ</a>
+            <span class="truncate text-sm text-base-content/70 md:max-w-[220px]"><?= e($user['displayname'] ?? $user['username']) ?></span>
+            <a class="btn btn-sm btn-ghost shrink-0 rounded-xl font-normal text-error hover:bg-error/10" href="/tracks/logout">🚪 ออกจากระบบ</a>
           </div>
         </div>
       <?php else: ?>
         <nav class="text-sm">
-          <a class="rounded-xl px-3 py-2 hover:bg-black/5" href="/tracks/login">🔐 เข้าสู่ระบบ</a>
+          <a class="btn btn-sm btn-ghost rounded-xl font-normal" href="/tracks/login">🔐 เข้าสู่ระบบ</a>
         </nav>
       <?php endif; ?>
     </div>

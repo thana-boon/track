@@ -173,17 +173,17 @@ if ($sessionDate !== '') {
                       <?php endif; ?>
                     </div>
                   </div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <a class="inline-flex items-center rounded-2xl bg-calm-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-calm-500" href="<?= e($href) ?>">✅ เช็คชื่อ</a>
+                  <div class="flex w-full flex-wrap items-center gap-2 md:w-auto">
+                    <a class="inline-flex flex-1 items-center justify-center rounded-2xl bg-calm-600 px-4 py-3 text-sm font-medium text-white shadow-sm hover:bg-calm-500 md:flex-none md:py-2.5" href="<?= e($href) ?>">✅ เช็คชื่อ</a>
                     <?php if ($role === 'admin'): ?>
-                      <a class="inline-flex items-center rounded-2xl border border-black/10 bg-white px-3 py-2.5 text-sm hover:bg-black/5" href="<?= e($editHref) ?>">✏️ แก้ไข</a>
+                      <a class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm hover:bg-black/5 md:py-2.5" href="<?= e($editHref) ?>">✏️ แก้ไข</a>
                       <form method="post" action="/tracks/class_attendance_delete" data-confirm="ต้องการลบรอบเรียนนี้ใช่ไหม? การเช็คชื่อ/ผลในรอบนี้จะหายไปด้วย">
                         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>" />
                         <input type="hidden" name="session_id" value="<?= (int)$id ?>" />
                         <input type="hidden" name="term" value="<?= (int)$term ?>" />
                         <input type="hidden" name="return_year" value="<?= (int)$yearId ?>" />
                         <input type="hidden" name="return_date" value="<?= e((string)$sessionDate) ?>" />
-                        <button class="inline-flex items-center rounded-2xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800 hover:bg-red-100">🗑️ ลบ</button>
+                        <button class="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-800 hover:bg-red-100 md:py-2.5">🗑️ ลบ</button>
                       </form>
                     <?php endif; ?>
                   </div>
